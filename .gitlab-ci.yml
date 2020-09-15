@@ -18,7 +18,7 @@ build-producer:
       - producer/queue_op/*
   script:
     - docker login ${REGISTRY} -u ${DOCKER_USER} -p ${DOCKER_PASSWORD}
-    - docker build -t ${PRODUCER_CONTAINER_IMAGE} .
+    - docker build -t ${PRODUCER_CONTAINER_IMAGE} producer/.
     - docker push ${PRODUCER_CONTAINER_IMAGE}
 
 deploy-producer:
@@ -47,7 +47,7 @@ build-consumer:
       - consumer/*
   script:
     - docker login ${REGISTRY} -u ${DOCKER_USER} -p ${DOCKER_PASSWORD}
-    - docker build -t ${CONSUMER_CONTAINER_IMAGE} .
+    - docker build -t ${CONSUMER_CONTAINER_IMAGE} consumer/.
     - docker push ${CONSUMER_CONTAINER_IMAGE}
 
 deploy-consumer:
