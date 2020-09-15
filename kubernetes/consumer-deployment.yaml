@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: queue-consumer
+  namespace: greenroom
+  labels:
+    app: queue-consumer
+    env: charite
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: queue-consumer
+      env: charite
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 33%
+  template:
+    metadata:
+      labels:
+        app: queue-consumer
+        env: charite
+    spec:
+      serviceAccountName: consumer-serviceaccount
+      containers:
+        - name: queue-consumer
+          image: 10.32.42.225:5000/queue-consumer:<VERSION>
+          env:
+          - name: env
+            value: "charite"
+          - name: docker-registry-ip
+            value: "10.32.42.225"
+          resources:
+            requests:
+              memory: "1000Mi"
+              cpu: "1"
+            limits:
+              memory: "1000Mi"
+              cpu: "1"
+          volumeMounts:
+          - name: nfsvol
+            mountPath: /data/vre-storage
+      nodeSelector:
+        namespace: greenroom
+      volumes:
+        - name: nfsvol
+          persistentVolumeClaim:
+            claimName: greenroom-storage

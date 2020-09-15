@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: queue-producer
+  namespace: greenroom
+  labels:
+    app: queue-producer
+    env: charite
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: queue-producer
+      env: charite
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 33%
+  template:
+    metadata:
+      labels:
+        app: queue-producer
+        env: charite
+    spec:
+      containers:
+        - name: queue-producer
+          image: 10.32.42.225:5000/queue-producer:<VERSION>
+          ports:
+            - containerPort: 6060
+          env:
+          - name: env
+            value: "charite"
+          volumeMounts:
+          - name: nfsvol
+            mountPath: /data/vre-storage
+          readinessProbe:
+            tcpSocket:
+              port: 6060
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          resources:
+            requests:
+              memory: "1000Mi"
+              cpu: "1"
+            limits:
+              memory: "1000Mi"
+              cpu: "1"
+      nodeSelector:
+        namespace: greenroom
+      volumes:
+        - name: nfsvol
+          persistentVolumeClaim:
+            claimName: greenroom-storage
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: queue-producer
+  namespace: greenroom
+  labels:
+    app: queue-producer
+    env: charite
+spec:
+  ports:
+  - name: queue-producer
+    port: 6060
+    targetPort: 6060
+  selector:
+    app: queue-producer
+    env: charite
+  type: ClusterIP
