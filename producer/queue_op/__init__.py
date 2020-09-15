@@ -11,6 +11,6 @@ module_api = Api(
 api = module_api.namespace('Queue Service', description='Operation on RabbitMQ', path ='/')
 
 # user operations
-from queue_op.sender import Queue_sender
-api.add_resource(Queue_sender, '/v1/send_message')
+from queue_op.producer import QueueProducer
+api.add_resource(QueueProducer, '/v1/send_message')
 

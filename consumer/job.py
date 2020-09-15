@@ -18,7 +18,7 @@ class KubernetesApiClient(object):
     def create_batch_api_client(self):
             return client.BatchV1Api(client.ApiClient(self.configuration))
 
-    def create_job_object(self, job_name, container_image, volume_path, command, args, uploader, create_time):
+    def create_job_object(self, job_name, container_image, volume_path, command, args, uploader):
             # file_path = args[1]
             pvc = client.V1PersistentVolumeClaimVolumeSource(
                 claim_name = ConfigClass.claim_name,
@@ -44,8 +44,7 @@ class KubernetesApiClient(object):
                         metadata=client.V1ObjectMeta(labels={"pipeline": ConfigClass.generate_pipeline},
                                                     annotations={"input_file":args[1],
                                                                 "output_path":args[3],
-                                                                "uploader": uploader,
-                                                                "create_time": create_time}),
+                                                                "uploader": uploader}),
                         spec=client.V1PodSpec(restart_policy="Never", 
                                             containers=[container],
                                             volumes=[volume]))
