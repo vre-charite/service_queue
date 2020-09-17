@@ -17,7 +17,7 @@ class ConnectionHandler:
             self._connection = pika.BlockingConnection(
                 pika.ConnectionParameters(
                     host=ConfigClass.gm_queue_endpoint,
-                    heartbeat=0,
+                    heartbeat=180,
                     credentials=credentials)
             )
             logger.info('Successed Initiated queue connection')

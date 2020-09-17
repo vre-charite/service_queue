@@ -33,9 +33,9 @@ class QueueProducer(Resource):
             current_app.logger.exception(f'Error when creating generate producer object: {e}')
         
 
-    def invalid_project(self):
+    def invalid_project(self, event_type, project, create_time, payload):
         res = APIResponse()
-        current_app.logger.error(f'Cannot Recognize project.  Project Name:  {project}')
+        current_app.logger.error(f'Cannot Recognize project.{project}')
         res.set_result('Cannot recognize project')
         res.set_code(EAPIResponseCode.bad_request)
         return res

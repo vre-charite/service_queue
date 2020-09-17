@@ -105,9 +105,10 @@ class ProducerGenerate:
             res.set_code(EAPIResponseCode.internal_error)
             return res
 
-    def invalid_event(self):        
+    def invalid_event(self, payload):        
         res = APIResponse()
-        current_app.logger.error(f'Undefined event type for generate project')
+        project = payload.get('project', None)
+        current_app.logger.error(f'Undefined event type for project {project}')
         res.set_result('Undefined event type for generate project')
         res.set_code(EAPIResponseCode.bad_request)
         return res
@@ -148,10 +149,11 @@ class ProducerTVB:
             res.set_code(EAPIResponseCode.internal_error)
             return res
 
-    def invalid_event(self):        
+    def invalid_event(self, payload):        
         res = APIResponse()
-        current_app.logger.error(f'Undefined event type for generate project')
-        res.set_result('Undefined event type for generate project')
+        project = payload.get('project', None)
+        current_app.logger.error(f'Undefined event type for project {project}')
+        res.set_result('Undefined event type for TVB project')
         res.set_code(EAPIResponseCode.bad_request)
         return res
 
