@@ -8,5 +8,5 @@ RUN chown -R deploy:deploy /home/deploy
 USER deploy
 RUN pip install --no-cache-dir -r requirements.txt --user --proxy="http://proxy.charite.de:8080/"
 ENV PATH="/home/deploy/.local/bin:${PATH}"
-CMD ["python3", "./receiver.py"]
+CMD ["python3", "./main.py"]
 # CMD ["python","app.py"]
