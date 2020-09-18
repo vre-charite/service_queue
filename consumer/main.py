@@ -57,14 +57,16 @@ def callback(ch, method, properties, body):
             logger.exception(f'Error occurred while copying file. {e}')
             ch.basic_nack(delivery_tag = method.delivery_tag, requeue=False)
     elif method.routing_key == 'tvb.data_uploaded':
-        url = ConfigClass.data_ops_endpoint+'/v1/files/copy'
-        res = requests.post(url, json=message)
-        if res.status_code == 200:
-            logger.info(json.loads(res.text))
-            ch.basic_ack(delivery_tag = method.delivery_tag)
-        else:
-            logger.exception(json.loads(res.text))
-            ch.basic_nack(delivery_tag = method.delivery_tag, requeue=False)                    
+        logger.info('tvb data uploaded')
+        ch.basic_ack(delivery_tag = method.delivery_tag)
+        # url = ConfigClass.data_ops_endpoint+'/v1/files/copy'
+        # res = requests.post(url, json=message)
+        # if res.status_code == 200:
+        #     logger.info(json.loads(res.text))
+        #     ch.basic_ack(delivery_tag = method.delivery_tag)
+        # else:
+        #     logger.exception(json.loads(res.text))
+        #     ch.basic_nack(delivery_tag = method.delivery_tag, requeue=False)                    
     else:
         logger.exception('Undefined Routing key')
         ch.basic_nack(delivery_tag = method.delivery_tag, requeue=False)
