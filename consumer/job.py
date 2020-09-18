@@ -47,7 +47,9 @@ class KubernetesApiClient(object):
                                                                 "uploader": uploader}),
                         spec=client.V1PodSpec(restart_policy="Never", 
                                             containers=[container],
-                                            volumes=[volume]))
+                                            volumes=[volume],
+                                            node_selector={"namespace":ConfigClass.namespace}))
+                                            
             spec = client.V1JobSpec(
                         template=template,
                         backoff_limit=0,
