@@ -6,7 +6,11 @@ class ConfigClass(object):
     #greenroom queue
     gm_queue_endpoint = 'message-bus-greenroom.greenroom'
     gm_username = 'greenroom'
-    gm_password = 'indoc101'
+    env = os.environ.get('env')
+    if env == 'charite':
+        gm_password = 'rabbitmq-jrjmfa9svvC'
+    else:
+        gm_password = 'indoc101'
 
     # folders been watched
     data_lake = "/data/vre-storage"
@@ -25,4 +29,6 @@ class ConfigClass(object):
     docker_ip = os.environ.get('docker-registry-ip') 
     image = docker_ip+':5000/dcmedit:v0.1' if docker_ip else '10.3.7.221:5000/dcmedit:v0.1'
     
-    
+    #greenroom queue
+    gr_queue = 'gr_queue'
+    gr_exchange = 'gr_exchange'

@@ -1,3 +1,4 @@
+import os 
 class ConfigClass(object):
     # the packaged modules
     api_modules = ["queue_op"]    
@@ -5,7 +6,11 @@ class ConfigClass(object):
     #greenroom queue
     gm_queue_endpoint = 'message-bus-greenroom.greenroom'
     gm_username = 'greenroom'
-    gm_password = 'indoc101'
+    env = os.environ.get('env')
+    if env == 'charite':
+        gm_password = 'rabbitmq-jrjmfa9svvC'
+    else:
+        gm_password = 'indoc101'
 
     # folders been watched
     data_lake = '/data/vre-storage'

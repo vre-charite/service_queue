@@ -84,7 +84,7 @@ def main():
     file_handler.setFormatter(formatter)
     logger.addHandler(file_handler)
     logger.setLevel(logging.DEBUG)
-    consumer = QueueConsumer(routing_key='#', exchange_name='gr_exchange', exchange_type='topic', queue='gr_queue')
+    consumer = QueueConsumer(routing_key='#', exchange_name=ConfigClass.gr_exchange, exchange_type='topic', queue=ConfigClass.gr_queue)
     consumer.channel.basic_qos(prefetch_count=1)
     consumer.channel.basic_consume(
         queue=consumer.queue, 
