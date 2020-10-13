@@ -1,5 +1,4 @@
 from flask_restx import Api, Resource, fields
-# from flask_restful import Api
 module_api = Api(
     version='1.0', 
     title='Queue service API',

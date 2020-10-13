@@ -1,5 +1,4 @@
 from kubernetes.client.rest import ApiException
-from job import KubernetesApiClient, Constant
 from connection_handler import ConnectionHandler
 from config import ConfigClass
 import logging
@@ -7,6 +6,7 @@ import logging
 logger = logging.getLogger()
 
 class QueueConsumer:
+    # Init Queue Consumer connection
     def __init__(self, routing_key, exchange_name=None, exchange_type=None, queue=None):
         self.conn = ConnectionHandler()
         self.current_conn = self.conn.get_current_connection()

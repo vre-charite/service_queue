@@ -6,6 +6,7 @@ import pika
 import json
 
 class MessagePublish:
+    # This class used to publish message, and declare queue's channel and exchange binding
     def __init__(self, routing_key, exchange_name=None, exchange_type=None, queue=None):
         self.conn = ConnectionHandler()
         self.current_conn = self.conn.get_current_connection()
@@ -27,7 +28,8 @@ class MessagePublish:
         self.routing_key = routing_key
 
 
-    def publish(self, body):     
+    def publish(self, body):
+        # this function used to publish message to the queue by defined exchange, routing key and message body     
         res = APIResponse()     
         try:
             self.channel.basic_publish(

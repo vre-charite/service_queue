@@ -1,6 +1,6 @@
 from config import ConfigClass
 from consumer import QueueConsumer
-from job import Constant, KubernetesApiClient
+from job import KubernetesApiClient
 from kubernetes.client.rest import ApiException
 import logging
 import requests
@@ -17,6 +17,7 @@ def millis():
     return current_milli_time
 
 def generate_pipeline( input_path, output_path, work_path, log_file, job_name, project, generate_id, uploader):
+    #create kubernetes job to run Generate 'dcm_edit' pipeline
     volume_path = ConfigClass.data_lake
     command = ["/usr/bin/python3", "scripts/dcm_edit.py"]
     args = [ "-i", input_path, "-o", output_path, "-t", work_path, "-l", log_file, "-p", project, "-s", generate_id]
@@ -25,7 +26,7 @@ def generate_pipeline( input_path, output_path, work_path, log_file, job_name, p
         job_api_client = api_client.create_batch_api_client()
         job = api_client.create_job_object(job_name, ConfigClass.image, volume_path, command, args, uploader)
         api_response = job_api_client.create_namespaced_job(
-            namespace=Constant.NAMESPACE,
+            namespace=ConfigClass.namespace,
             body=job)
         logger.info(api_response.status)
         logger.info(api_response)
@@ -35,6 +36,7 @@ def generate_pipeline( input_path, output_path, work_path, log_file, job_name, p
         return
 
 def callback(ch, method, properties, body):
+    #received message and start to consume message
     logger.info(" [x] Received %r" % body)
     message = json.loads(body) 
     if method.routing_key =='generate.data_uploaded':
@@ -49,7 +51,13 @@ def callback(ch, method, properties, body):
                 os.makedirs(output_path)
             if not os.path.exists(log_file):
                 os.mknod(log_file)
-            result = generate_pipeline(message['input_path'], output_path, message['work_path'], log_file, job_name.lower(),message['project'],generate_id,message['uploader'])
+            result = generate_pipeline(
+                message['input_path'], 
+                output_path, message['work_path'], 
+                log_file, 
+                job_name.lower(),
+                message['project'],
+                generate_id,message['uploader'])
             logger.info(result)
             logger.info("pipeline is processing")
             ch.basic_ack(delivery_tag = method.delivery_tag)
@@ -74,7 +82,9 @@ def callback(ch, method, properties, body):
 
 
 def main():
-    # connect to the queue
+    # define log formatter and location
+    # initialize queue connection and consume messages
+    # routing key set up to '#' means consume all routes in connected queue
     if not os.path.exists('./logs'):
         print(os.path.exists('./logs'))
         os.makedirs('./logs')

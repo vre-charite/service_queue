@@ -5,6 +5,9 @@ import pika
 logger = logging.getLogger()
 
 class ConnectionHandler:
+    # this class used to handle the connection with rabbitmq server
+    # AMQP connection heartbeat timeout value for negotiation during connection tuning or callable which is invoked during connection tuning. 
+    # None to accept broker's value. 0 turns heartbeat off.
     def __init__(self):      
         self.init_connection()
         

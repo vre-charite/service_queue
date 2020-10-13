@@ -1,14 +1,12 @@
 import logging
 import sys,os, time
 from kubernetes import client, config, utils
-import kubernetes.client
 from config import ConfigClass
 
-class Constant(object):
-    NAMESPACE = ConfigClass.namespace
 class KubernetesApiClient(object):
+    #This class is used to init kubernetes job client and include create job function
     def __init__(self):
-        # load 
+        # load kubernetes configuration
         try:
             config.load_incluster_config()
         except:
@@ -19,7 +17,7 @@ class KubernetesApiClient(object):
             return client.BatchV1Api(client.ApiClient(self.configuration))
 
     def create_job_object(self, job_name, container_image, volume_path, command, args, uploader):
-            # file_path = args[1]
+            # define the persistent volume claim and mount pvc to k8s job container
             pvc = client.V1PersistentVolumeClaimVolumeSource(
                 claim_name = ConfigClass.claim_name,
                 read_only = False
@@ -39,7 +37,8 @@ class KubernetesApiClient(object):
                         args=args,
                         volume_mounts=[volume_mount],
                         image_pull_policy="Always")
-
+            # metadata defined in annotations part
+            # node selector defined how to assgin work nodes when creating job container      
             template = client.V1PodTemplateSpec(
                         metadata=client.V1ObjectMeta(labels={"pipeline": ConfigClass.generate_pipeline},
                                                     annotations={"input_file":args[1],

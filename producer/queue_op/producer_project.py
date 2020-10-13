@@ -7,11 +7,15 @@ import time
 import os
 
 class ProducerGenerate:
-    
+    # Init generate project producer, including all generate related function, and different event type will be mapped to different function
+    # for different event type, the published message may differ from each other
+    # invalid_event function as the default function used for undefined event 
     def __init__(self, event_type, project, create_time):
         self.event_type = event_type
         self.project = project
         self.create_time = create_time
+        self.routing_key = project + '.' + event_type
+        self.producer = MessagePublish(self.routing_key, exchange_name=ConfigClass.gr_exchange, exchange_type='topic', queue=ConfigClass.gr_queue)
         
     def generate_uploaded(self, payload):        
         try: 
@@ -35,6 +39,7 @@ class ProducerGenerate:
             log_path.append('logs')
             base_path.append('processed')
             base_path.append(ConfigClass.generate_pipeline)
+            # check if file typs is zip
             file_type = filetype.guess(input_path)
             current_app.logger.info(f'input path: {input_path}, file type : {file_type}')
             if file_type is None:
@@ -54,9 +59,7 @@ class ProducerGenerate:
                         'uploader': uploader,
                         'create_time': self.create_time
                     }
-                    routing_key = self.project + '.' + self.event_type
-                    producer = MessagePublish(routing_key, exchange_name=ConfigClass.gr_exchange, exchange_type='topic', queue=ConfigClass.gr_queue)
-                    producer.publish(message_json)
+                    self.producer.publish(message_json)
                 else:
                     current_app.logger.error(f'Wrong file type: {file_type}')
                     res.set_result('Invalid File Type')
@@ -95,9 +98,7 @@ class ProducerGenerate:
                 'uploader': uploader,
                 'create_time': self.create_time
             }
-            routing_key = self.project + '.' + self.event_type
-            producer = MessagePublish(routing_key, exchange_name=ConfigClass.gr_exchange, exchange_type='topic', queue=ConfigClass.gr_queue)
-            producer.publish(message_json)  
+            self.producer.publish(message_json)  
             return res
         except Exception as e:
             current_app.logger.error(f'Error when trying to parse the message to queue: {e}')
@@ -115,10 +116,15 @@ class ProducerGenerate:
 
 
 class ProducerTVB:
+    # Init tvb project producer, including all tvb related function, and different event type will be mapped to different function
+    # for different event type, the published message may differ from each other
+    # invalid_event function as the default function used for undefined event 
     def __init__(self, event_type, project, create_time):
         self.event_type = event_type
         self.project = project
         self.create_time = create_time
+        self.routing_key = project + '.' + event_type
+        self.producer = MessagePublish(self.routing_key, exchange_name=ConfigClass.gr_exchange, exchange_type='topic', queue=ConfigClass.gr_queue)
         
     def tvb_uploaded(self, payload):        
         try: 
@@ -139,9 +145,7 @@ class ProducerTVB:
                 'uploader': uploader,
                 'create_time': self.create_time
             }
-            routing_key = self.project + '.' + self.event_type
-            producer = MessagePublish(routing_key, exchange_name=ConfigClass.gr_exchange, exchange_type='topic', queue=ConfigClass.gr_queue)
-            producer.publish(message_json)  
+            self.producer.publish(message_json)  
             return res
         except Exception as e:
             current_app.logger.error(f'Error when trying to parse the message to queue: {e}')

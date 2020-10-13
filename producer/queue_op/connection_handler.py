@@ -4,6 +4,7 @@ from config import ConfigClass
 import pika
 
 class ConnectionHandler:
+    # This class used to initiate Queue connection 
     def __init__(self):      
         self.init_connection()
         
@@ -16,7 +17,7 @@ class ConnectionHandler:
             self._connection = pika.BlockingConnection(
                 pika.ConnectionParameters(
                     host=ConfigClass.gm_queue_endpoint,
-                    heartbeat=0,
+                    heartbeat=180,
                     credentials=credentials)
             )
             current_app.logger.info('Successed Initiated queue connection')

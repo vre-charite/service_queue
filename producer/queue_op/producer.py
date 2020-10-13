@@ -9,6 +9,7 @@ import os
 
 class QueueProducer(Resource):
     def generate(self, event_type, project, create_time, payload):
+        # define the event type for generate project
         try:
             generate_producer = ProducerGenerate(event_type, project, create_time)
             event_map = {
@@ -22,6 +23,7 @@ class QueueProducer(Resource):
         
 
     def tvb(self, event_type, project, create_time, payload):
+        # define the event type for tvp project 
         try:
             tvb_producer = ProducerTVB(event_type, project, create_time)
             event_map = {
@@ -60,6 +62,7 @@ class QueueProducer(Resource):
                 res.set_result('Empty Message in the queue')
                 res.set_code(EAPIResponseCode.not_found)
                 return res.response, res.code
+            # project_map will map project to different functions, and if there is no mapping found, it will map project to default function, which is invalid_project
             project_map = {
                 'generate': self.generate,
                 'tvb': self.tvb
