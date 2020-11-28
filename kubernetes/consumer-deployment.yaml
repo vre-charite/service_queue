@@ -50,6 +50,6 @@ spec:
         - name: nfsvol
           persistentVolumeClaim:
             claimName: greenroom-storage
-	      - name: nfsvol-vre-data
-	        persistentVolumeClaim:
-	          claimName: greenroom-vre-storage
+        - name: nfsvol-vre-data
+          persistentVolumeClaim:
+            claimName: greenroom-vre-storage
