@@ -42,10 +42,14 @@ spec:
           volumeMounts:
           - name: nfsvol
             mountPath: /data/vre-storage
+	        - name: nfsvol-vre-data
+	          mountPath: /vre-data
       nodeSelector:
         namespace: greenroom
       volumes:
         - name: nfsvol
           persistentVolumeClaim:
             claimName: greenroom-storage
-
+	      - name: nfsvol-vre-data
+	        persistentVolumeClaim:
+	          claimName: greenroom-vre-storage
