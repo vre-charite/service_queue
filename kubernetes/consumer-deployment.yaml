@@ -42,8 +42,8 @@ spec:
           volumeMounts:
           - name: nfsvol
             mountPath: /data/vre-storage
-	        - name: nfsvol-vre-data
-	          mountPath: /vre-data
+          - name: nfsvol-vre-data
+            mountPath: /vre-data
       nodeSelector:
         namespace: greenroom
       volumes:
