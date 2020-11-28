@@ -17,7 +17,8 @@ class ConfigClass(object):
     vre_data_storage = '/vre-data'
 
     #pipeline name
-    generate_pipeline='dicom_edit'
+    generate_pipeline ='dicom_edit'
+    copy_pipeline = 'data_transfer'
 
     #data ops gateway url
     data_ops_endpoint = "http://dataops-gr.greenroom:5063"
@@ -25,3 +26,7 @@ class ConfigClass(object):
     #greenroom queue
     gr_queue = 'gr_queue'
     gr_exchange = 'gr_exchange'
+
+    #testpipe queue
+    testpipe_queue = 'testpipe_queue'
+    testpipe_exchange = 'testpipe_exchange'

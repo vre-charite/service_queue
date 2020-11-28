@@ -1,7 +1,7 @@
 from flask import request, current_app
 from flask_restx import Api, Resource, fields
 from models.api_response import APIResponse, EAPIResponseCode
-from queue_op.producer_project import ProducerGenerate, ProducerTVB
+from queue_op.producer_project import ProducerGenerate, ProducerTVBCloud, ProducerTESTPipe
 from config import ConfigClass
 import pika
 import json 
@@ -22,18 +22,30 @@ class QueueProducer(Resource):
             current_app.logger.exception(f'Error when creating generate producer object: {e}')
         
 
-    def tvb(self, event_type, project, create_time, payload):
+    def tvbcloud(self, event_type, project, create_time, payload):
         # define the event type for tvp project 
         try:
-            tvb_producer = ProducerTVB(event_type, project, create_time)
+            tvbc_producer = ProducerTVBCloud(event_type, project, create_time)
             event_map = {
-                'data_uploaded':tvb_producer.tvb_uploaded
-            }.get(event_type, tvb_producer.invalid_event)
+                'data_uploaded':tvbc_producer.tvbc_uploaded,
+            }.get(event_type, tvbc_producer.invalid_event)
             res = event_map(payload=payload)
             return res
         except Exception as e:
             current_app.logger.exception(f'Error when creating generate producer object: {e}')
-        
+
+    def testpipe(self, event_type, project, create_time, payload):
+         # define the event type for testpipe project 
+        try:
+            testpipe_producer = ProducerTESTPipe(event_type, project, create_time)
+            event_map = {
+                'data_uploaded': testpipe_producer.testpipe_uploaded,
+                # 'data_processed': generate_producer.generate_processed
+            }.get(event_type, testpipe_producer.invalid_event)
+            res = event_map(payload=payload)
+            return res
+        except Exception as e:
+            current_app.logger.exception(f'Error when creating generate producer object: {e}')
 
     def invalid_project(self, event_type, project, create_time, payload):
         res = APIResponse()
@@ -65,7 +77,8 @@ class QueueProducer(Resource):
             # project_map will map project to different functions, and if there is no mapping found, it will map project to default function, which is invalid_project
             project_map = {
                 'generate': self.generate,
-                'tvb': self.tvb
+                'tvbcloud': self.tvbcloud,
+                'testpipeline': self.testpipe
             }.get(project, self.invalid_project)
             res = project_map(event_type, project, create_time, payload)
             return res.response, res.code

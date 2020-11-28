@@ -5,6 +5,7 @@ from config import ConfigClass
 import filetype
 import time
 import os
+import datetime
 
 class ProducerGenerate:
     # Init generate project producer, including all generate related function, and different event type will be mapped to different function
@@ -115,7 +116,7 @@ class ProducerGenerate:
         return res
 
 
-class ProducerTVB:
+class ProducerTVBCloud:
     # Init tvb project producer, including all tvb related function, and different event type will be mapped to different function
     # for different event type, the published message may differ from each other
     # invalid_event function as the default function used for undefined event 
@@ -126,26 +127,31 @@ class ProducerTVB:
         self.routing_key = project + '.' + event_type
         self.producer = MessagePublish(self.routing_key, exchange_name=ConfigClass.gr_exchange, exchange_type='topic', queue=ConfigClass.gr_queue)
         
-    def tvb_uploaded(self, payload):        
+    def tvbc_uploaded(self, payload):        
         try: 
             res = APIResponse()
             input_path = payload.get('input_path', None)
             uploader = payload.get('uploader', None)
+            path_list = str(input_path).split('/')
+            log_path = path_list[:4]
+            log_path.append('logs')
             if not input_path or not uploader:
                 res.set_result('Missing required information')
                 res.set_code(EAPIResponseCode.bad_request)
                 return res
             filename = os.path.basename(input_path)
-            output_path = ConfigClass.vre_data_storage + '/' + self.project + '/adni/' + filename
+            output_path = ConfigClass.vre_data_storage + '/' + self.project + '/raw/' + filename
             current_app.logger.info(f'input path: {input_path}, file name : {filename}')
             message_json = {
                 'project': self.project,
                 'input_path': input_path,
                 'output_path': output_path,
+                'logfile': '/'.join(log_path),
                 'uploader': uploader,
+                'process_pipeline':ConfigClass.copy_pipeline,
                 'create_time': self.create_time
             }
-            self.producer.publish(message_json)  
+            self.producer.publish(message_json)
             return res
         except Exception as e:
             current_app.logger.error(f'Error when trying to parse the message to queue: {e}')
@@ -158,6 +164,118 @@ class ProducerTVB:
         project = payload.get('project', None)
         current_app.logger.error(f'Undefined event type for project {project}')
         res.set_result('Undefined event type for TVB project')
+        res.set_code(EAPIResponseCode.bad_request)
+        return res
+
+class ProducerTESTPipe:
+    # Init TESTPipe project producer, including all TESTPipe related function, and different event type will be mapped to different function
+    # for different event type, the published message may differ from each other
+    # invalid_event function as the default function used for undefined event 
+    def __init__(self, event_type, project, create_time):
+        self.event_type = event_type
+        self.project = project
+        self.create_time = create_time
+        self.routing_key = project + '.' + event_type
+        self.producer = MessagePublish(self.routing_key,
+            exchange_name=ConfigClass.gr_exchange,
+            exchange_type='topic',
+            queue=ConfigClass.gr_queue)
+        
+    def testpipe_uploaded(self, payload):
+        current_app.logger.info(self.routing_key + "  ---------event sending.")        
+        try: 
+            res = APIResponse()
+            input_path = payload.get('input_path', None)
+            uploader = payload.get('uploader', None)
+            path_list = str(input_path).split('/')
+            filename = os.path.basename(input_path)
+            if not input_path or not uploader:
+                res.set_result('Missing required information')
+                res.set_code(EAPIResponseCode.bad_request)
+                return res
+            path_list = str(input_path).split('/')
+            if len(path_list) != 6:
+                    res.set_result('Not a valid path')
+                    res.set_code(EAPIResponseCode.bad_request)
+                    return res
+            output_path_g = ConfigClass.vre_data_storage + '/' + self.project + '/' + ConfigClass.generate_pipeline + '/' + filename
+            output_path_copy = ConfigClass.vre_data_storage + '/' + self.project + '/raw/' + filename
+            base_path = path_list[:4]
+            work_path = path_list[:4]
+            log_path = path_list[:4]
+            work_path.append('workdir')
+            log_path.append('logs')
+            base_path.append('processed')
+            base_path.append(ConfigClass.generate_pipeline)
+            # check if file typs is zip
+            file_type = filetype.guess(input_path)
+            current_app.logger.info(f'input path: {input_path}, file type : {file_type}')
+            if file_type is None:
+                current_app.logger.error('Can not recognize file type')
+                res.set_result('Invalid File Type')
+                res.set_code(EAPIResponseCode.bad_request) 
+            if not input_path or not uploader:
+                res.set_result('Missing required information')
+                res.set_code(EAPIResponseCode.bad_request)
+                return res
+            filename = os.path.basename(input_path)
+            current_app.logger.info(f'input path: {input_path}, file name : {filename}')
+            if file_type.extension == 'zip':
+                msg_generate = {
+                    'project': self.project,
+                    'input_path': input_path,
+                    'process_pipeline': ConfigClass.generate_pipeline,
+                    'pipeline': ConfigClass.generate_pipeline,
+                    'output_path': '/'.join(base_path),
+                    'work_path': '/'.join(work_path),
+                    'log_path': '/'.join(log_path),
+                    'generate_id': 'generate_id' + self.project + str(round(datetime.datetime.now().timestamp())),
+                    'uploader': uploader,
+                    'create_time': self.create_time
+                }
+                self.producer.publish(msg_generate)
+                current_app.logger.info(self.routing_key + "  ---------generate event sent.")
+                producer_copy = MessagePublish(self.routing_key,
+                    exchange_name=ConfigClass.gr_exchange,
+                    exchange_type='topic',
+                    queue=ConfigClass.gr_queue)   
+                msg_copy = {
+                    'project': self.project,
+                    'input_path': input_path,
+                    'output_path': output_path_copy,
+                    'logfile': '/'.join(log_path),
+                    'uploader': uploader,
+                    'process_pipeline': ConfigClass.copy_pipeline,
+                    'pipeline': ConfigClass.copy_pipeline,
+                    'create_time': self.create_time
+                }
+                producer_copy.publish(msg_copy)
+                current_app.logger.info(self.routing_key + "  ---------copy event sent.")  
+            else:
+                msg_copy = {
+                    'project': self.project,
+                    'input_path': input_path,
+                    'output_path': output_path_copy,
+                    'logfile': '/'.join(log_path),
+                    'uploader': uploader,
+                    'process_pipeline': ConfigClass.copy_pipeline,
+                    'pipeline': ConfigClass.copy_pipeline,
+                    'create_time': self.create_time
+                }
+                self.producer.publish(msg_copy)
+                current_app.logger.info(self.routing_key + "  ---------copy event sent.")   
+            return res
+        except Exception as e:
+            current_app.logger.error(f'Error when trying to parse the message to queue: {e}')
+            res.set_result('Error when trying to parse the message to queue')
+            res.set_code(EAPIResponseCode.internal_error)
+            return res
+
+    def invalid_event(self, payload):        
+        res = APIResponse()
+        project = payload.get('project', None)
+        current_app.logger.error(f'Undefined event type for project {project}')
+        res.set_result('Undefined event type for TESTPIPE project')
         res.set_code(EAPIResponseCode.bad_request)
         return res
 
