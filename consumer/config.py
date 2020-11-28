@@ -9,15 +9,16 @@ class ConfigClass(object):
     env = os.environ.get('env')
     if env == 'charite':
         gm_password = 'rabbitmq-jrjmfa9svvC'
+        tvb_cloud_pvc_name = 'greenroom-vre-storage'
     else:
         gm_password = 'indoc101'
+        tvb_cloud_pvc_name = "greenroom-storage-vre-data"
 
     # folders been watched
     data_lake = "/data/vre-storage"
     claim_name = "greenroom-storage"
     # tvb mount
     tvb_cloud = "/vre-data"
-    tvb_cloud_pvc_name = "greenroom-storage-vre-data"
     tvb_cloud_volume_name = "nfsvol-vre-data"
 
     #pipeline name
