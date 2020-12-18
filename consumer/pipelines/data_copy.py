@@ -1,9 +1,10 @@
 from config import ConfigClass
 from job import KubernetesApiClient
 from kubernetes.client.rest import ApiException
-import datetime
+import time
 
-def run_pipeline(logger, input_path, output_path, log_file, project_code = None):
+def run_pipeline(logger, input_path, output_path,
+    log_file, project_code, uploader, generate_id, event_payload):
     #create kubernetes job to run Generate 'dcm_edit' pipeline
     volume_path = ConfigClass.data_lake
     command = ["/usr/bin/python3", "scripts/file_copy.py"]
@@ -11,14 +12,16 @@ def run_pipeline(logger, input_path, output_path, log_file, project_code = None)
     try:
         api_client = KubernetesApiClient()
         job_api_client = api_client.create_batch_api_client()
-        job_name = ConfigClass.tvbc_copy_pipeline
-        job = api_client.tvb_c_copy_job_obj(
-            "data-transfer-tvb-c-" + str(round(datetime.datetime.now().timestamp())),
-            ConfigClass.tvbc_copy_image,
+        job = api_client.copy_job_obj(
+            'data-transfer-' + project_code + str(round(time.time() * 10000)),
+            ConfigClass.copy_image,
             volume_path,
             command,
             args,
-            project_code)
+            project_code,
+            uploader,
+            generate_id,
+            event_payload)
         api_response = job_api_client.create_namespaced_job(
             namespace=ConfigClass.namespace,
             body=job)

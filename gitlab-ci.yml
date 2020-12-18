@@ -1,0 +1,154 @@
+image: docker:latest
+
+variables:
+  REGISTRY_DEV: 10.3.7.221:5000
+  REGISTRY_STAGING: 10.3.7.241:5000
+  PRODUCER_CONTAINER_IMAGE_DEV: ${REGISTRY_DEV}/queue-producer:${CI_COMMIT_SHORT_SHA}
+  PRODUCER_CONTAINER_IMAGE_STAGING: ${REGISTRY_STAGING}/queue-producer:${CI_COMMIT_SHORT_SHA}
+  CONSUMER_CONTAINER_IMAGE_DEV: ${REGISTRY_DEV}/queue-consumer:${CI_COMMIT_SHORT_SHA}
+  CONSUMER_CONTAINER_IMAGE_STAGING: ${REGISTRY_STAGING}/queue-consumer:${CI_COMMIT_SHORT_SHA}
+
+dev-build-producer:
+  stage: build
+  tags:
+    - deployement
+  only:
+    refs:
+      - k8s-dev
+    changes:
+      - kubernetes/dev-producer-deployment.yaml
+      - producer/*
+      - producer/app/*
+      - producer/models/*
+      - producer/queue_op/*
+
+  script:
+    - docker login ${REGISTRY_DEV} -u ${DOCKER_USER} -p ${DOCKER_PASSWORD}
+    - docker build -t ${PRODUCER_CONTAINER_IMAGE_DEV} producer/.
+    - docker push ${PRODUCER_CONTAINER_IMAGE_DEV}
+
+dev-deploy-producer:
+  stage: deploy
+  tags:
+    - deployement
+  only:
+    refs:
+      - k8s-dev
+    changes:
+      - kubernetes/dev-producer-deployment.yaml
+      - producer/*
+      - producer/app/*
+      - producer/models/*
+      - producer/queue_op/*
+
+  image: dtzar/helm-kubectREGISTRY_DEVl
+  script:
+    - sed -i "s/<VERSION>/${CI_COMMIT_SHORT_SHA}/g" kubernetes/dev-producer-deployment.yaml
+    - kubectl config use-context dev
+    - kubectl apply -f kubernetes/dev-producer-deployment.yaml
+
+
+dev-build-consumer:
+  stage: build
+  tags:
+    - deployement
+  only:
+    refs:
+      - k8s-dev
+    changes:
+      - kubernetes/dev-consumer-deployment.yaml
+      - consumer/*
+      - consumer/*/*
+  script:
+    - docker login ${REGISTRY_DEV} -u ${DOCKER_USER} -p ${DOCKER_PASSWORD}
+    - docker build -t ${CONSUMER_CONTAINER_IMAGE_DEV} consumer/.
+    - docker push ${CONSUMER_CONTAINER_IMAGE_DEV}
+
+dev-deploy-consumer:
+  stage: deploy
+  tags:
+    - deployement
+  only:
+    refs:
+      - k8s-dev
+    changes:
+      - kubernetes/dev-consumer-deployment.yaml
+      - consumer/*
+      - consumer/*/*
+  image: dtzar/helm-kubectl
+  script:
+    - sed -i "s/<VERSION>/${CI_COMMIT_SHORT_SHA}/g" kubernetes/dev-consumer-deployment.yaml
+    - kubectl config use-context dev
+    - kubectl apply -f kubernetes/dev-consumer-deployment.yaml
+
+staging-build-producer:
+  stage: build
+  tags:
+    - deployement
+  only:
+    refs:
+      - k8s-staging
+    changes:
+      - kubernetes/staging-producer-deployment.yaml
+      - producer/*
+      - producer/app/*
+      - producer/models/*
+      - producer/queue_op/*
+  script:
+    - docker login ${REGISTRY_STAGING} -u ${DOCKER_USER} -p ${DOCKER_PASSWORD}
+    - docker build -t ${PRODUCER_CONTAINER_IMAGE_STAGING} producer/.
+    - docker push ${PRODUCER_CONTAINER_IMAGE_STAGING}
+
+staging-deploy-producer:
+  stage: deploy
+  tags:
+    - deployement
+  only:
+    refs:
+      - k8s-staging
+    changes:
+      - kubernetes/staging-producer-deployment.yaml
+      - producer/*
+      - producer/app/*
+      - producer/models/*
+      - producer/queue_op/*
+  image: dtzar/helm-kubectl
+  script:
+    - sed -i "s/<VERSION>/${CI_COMMIT_SHORT_SHA}/g" kubernetes/staging-producer-deployment.yaml
+    - kubectl config use-context staging
+    - kubectl apply -f kubernetes/staging-producer-deployment.yaml
+
+
+staging-build-consumer:
+  stage: build
+  tags:
+    - deployement
+  only:
+    refs:
+      - k8s-staging
+    changes:
+      - kubernetes/staging-consumer-deployment.yaml
+      - consumer/*
+      - consumer/*/*
+  script:
+    - docker login ${REGISTRY_STAGING} -u ${DOCKER_USER} -p ${DOCKER_PASSWORD}
+    - docker build -t ${CONSUMER_CONTAINER_IMAGE_STAGING} consumer/.
+    - docker push ${CONSUMER_CONTAINER_IMAGE_STAGING}
+
+staging-deploy-consumer:
+  stage: deploy
+  tags:
+    - deployement
+  only:
+    refs:
+      - k8s-staging
+    changes:
+      - kubernetes/staging-consumer-deployment.yaml
+      - consumer/*
+      - consumer/*/*
+  image: dtzar/helm-kubectl
+  script:
+    - sed -i "s/<VERSION>/${CI_COMMIT_SHORT_SHA}/g" kubernetes/staging-consumer-deployment.yaml
+    - kubectl config use-context staging
+    - kubectl apply -f kubernetes/staging-consumer-deployment.yaml
+

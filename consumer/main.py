@@ -2,7 +2,7 @@ from config import ConfigClass
 from consumer import QueueConsumer
 from job import KubernetesApiClient
 from kubernetes.client.rest import ApiException
-from pipelines.tvb_c_copy import run_pipeline as run_tvb_c_copy
+from pipelines.data_copy import run_pipeline as run_data_copy
 import logging
 import requests
 import pika
@@ -85,15 +85,37 @@ def callback(ch, method, properties, body):
         except Exception as e:
             logger.exception(f'Error occurred while copying file. {e}')
             ch.basic_nack(delivery_tag = method.delivery_tag, requeue=False)
-    elif method.routing_key == 'tvbcloud.data_uploaded':
+    # elif method.routing_key == 'tvbcloud.data_uploaded':
+    #     try:
+    #         logger.info('tvbcloud data uploaded')
+    #         logger.info(message)
+    #         input_path = message['input_path']
+    #         output_path = message['output_path']
+    #         logfile = message['logfile']
+    #         uploader = message['uploader']
+    #         try:
+    #             result = run_data_copy(logger, input_path, output_path, logfile, 'tvbcloud', uploader, generate_id=None)
+    #             logger.info(result)
+    #             logger.info("pipeline is processing")
+    #             ch.basic_ack(delivery_tag = method.delivery_tag)
+    #         except Exception as e:
+    #             logger.exception(f'Error occurred while copying file. {e}')
+    #             ch.basic_nack(delivery_tag = method.delivery_tag, requeue=False)
+    #     except Exception as e:
+    #         logger.exception(f'Error occurred while copying file. {e}')
+    #         ch.basic_nack(delivery_tag = method.delivery_tag, requeue=False)
+    elif method.routing_key.split('.')[-1] == 'file_copy':
         try:
-            logger.info('tvbcloud data uploaded')
+            logger.info('manual data copy triggered')
             logger.info(message)
             input_path = message['input_path']
             output_path = message['output_path']
             logfile = message['logfile']
+            generate_id = message['generate_id']
+            uploader = message['uploader']
             try:
-                result = run_tvb_c_copy(logger, input_path, output_path, logfile)
+                result = run_data_copy(logger, input_path, output_path, logfile,
+                    method.routing_key.split('.')[0], uploader, generate_id, message)
                 logger.info(result)
                 logger.info("pipeline is processing")
                 ch.basic_ack(delivery_tag = method.delivery_tag)
@@ -102,52 +124,7 @@ def callback(ch, method, properties, body):
                 ch.basic_nack(delivery_tag = method.delivery_tag, requeue=False)
         except Exception as e:
             logger.exception(f'Error occurred while copying file. {e}')
-            ch.basic_nack(delivery_tag = method.delivery_tag, requeue=False)
-    elif method.routing_key == 'testpipeline.data_uploaded':
-        pass
-        # try:
-        #     if message['process_pipeline'] == 'dicom_edit':
-        #         output_path = message['output_path']
-        #         log_file = message['log_path']+'/'+ConfigClass.generate_pipeline+'.log'
-        #         isExists = os.path.exists(output_path)
-        #         generate_id = message['generate_id']
-        #         logger.info(f'GenerateID is {generate_id}')
-        #         job_name = message['project']+'-'+ millis()
-        #         try:
-        #             if not isExists:
-        #                 os.makedirs(output_path)
-        #             if not os.path.exists(log_file):
-        #                 os.mknod(log_file)
-        #             result = generate_pipeline_common(
-        #                 message['input_path'], 
-        #                 output_path, message['work_path'], 
-        #                 log_file, 
-        #                 job_name.lower(),
-        #                 message['project'],
-        #                 generate_id, message['uploader'])
-        #             logger.info(result)
-        #             logger.info("pipeline is processing")
-        #             ch.basic_ack(delivery_tag = method.delivery_tag)
-        #         except Exception as e:
-        #             logger.exception(f'Error occurred while copying file. {e}')
-        #             ch.basic_nack(delivery_tag = method.delivery_tag, requeue=False)
-        #     if message['process_pipeline'] == 'data_transfer':
-        #         logger.info('testpipeline data uploaded')
-        #         logger.info(message)
-        #         input_path = message['input_path']
-        #         output_path = message['output_path']
-        #         logfile = message['logfile']
-        #         try:
-        #             result = run_tvb_c_copy(logger, input_path, output_path, logfile, "testpipeline")
-        #             logger.info(result)
-        #             logger.info("pipeline is processing")
-        #             ch.basic_ack(delivery_tag = method.delivery_tag)
-        #         except Exception as e:
-        #             logger.exception(f'Error occurred while copying file. {e}')
-        #             ch.basic_nack(delivery_tag = method.delivery_tag, requeue=False)
-        # except Exception as e:
-        #     logger.exception(f'Error occurred while copying file. {e}')
-        #     ch.basic_nack(delivery_tag = method.delivery_tag, requeue=False)                      
+            ch.basic_nack(delivery_tag = method.delivery_tag, requeue=False)        
     else:
         logger.exception('Undefined Routing key')
         ch.basic_nack(delivery_tag = method.delivery_tag, requeue=False)

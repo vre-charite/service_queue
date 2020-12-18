@@ -30,25 +30,25 @@ class KubernetesApiClient(object):
                 mount_path=volume_path,
                 name = 'nfsvol'
             )
-            # tvb_c mount
-            tvb_c_pvc = client.V1PersistentVolumeClaimVolumeSource(
-                claim_name = ConfigClass.tvb_cloud_pvc_name,
+            # vre core mount
+            vre_core_pvc = client.V1PersistentVolumeClaimVolumeSource(
+                claim_name = ConfigClass.vre_core_pvc_name,
                 read_only = False
             )
-            tvb_c_volume = client.V1Volume(
-                persistent_volume_claim = tvb_c_pvc,
-                name = ConfigClass.tvb_cloud_volume_name
+            vre_core_volume = client.V1Volume(
+                persistent_volume_claim = vre_core_pvc,
+                name = ConfigClass.vre_core_volume_name
             )
-            tvb_c_volume_mount = client.V1VolumeMount(
-                mount_path= ConfigClass.tvb_cloud,
-                name = ConfigClass.tvb_cloud_volume_name
+            vre_core_volume_mount = client.V1VolumeMount(
+                mount_path= ConfigClass.vre_core,
+                name = ConfigClass.vre_core_volume_name
             )
             container = client.V1Container(
                         name=job_name,
                         image=container_image,
                         command=command,
                         args=args,
-                        volume_mounts=[volume_mount, tvb_c_volume_mount],
+                        volume_mounts=[volume_mount, vre_core_volume_mount],
                         image_pull_policy="Always")
             # metadata defined in annotations part
             # node selector defined how to assgin work nodes when creating job container      
@@ -59,7 +59,7 @@ class KubernetesApiClient(object):
                                                                 "uploader": uploader}),
                         spec=client.V1PodSpec(restart_policy="Never", 
                                             containers=[container],
-                                            volumes=[volume, tvb_c_volume],
+                                            volumes=[volume, vre_core_volume],
                                             node_selector={"namespace":ConfigClass.namespace}))
                                             
             spec = client.V1JobSpec(
@@ -74,7 +74,9 @@ class KubernetesApiClient(object):
                         spec=spec)
             return job
 
-    def tvb_c_copy_job_obj(self, job_name, container_image, volume_path, command, args, project_code = None):
+    def copy_job_obj(self, job_name, container_image,
+        volume_path, command, args, project_code, uploader, generate_id,
+        event_payload):
         # define the persistent volume claim and mount pvc to k8s job container
         pvc = client.V1PersistentVolumeClaimVolumeSource(
             claim_name = ConfigClass.claim_name,
@@ -88,39 +90,44 @@ class KubernetesApiClient(object):
             mount_path=volume_path,
             name = 'nfsvol'
         )
-        # tvb_c mount
-        tvb_c_pvc = client.V1PersistentVolumeClaimVolumeSource(
-            claim_name = ConfigClass.tvb_cloud_pvc_name,
+        # vre core mount
+        vre_core_pvc = client.V1PersistentVolumeClaimVolumeSource(
+            claim_name = ConfigClass.vre_core_pvc_name,
             read_only = False
         )
-        tvb_c_volume = client.V1Volume(
-            persistent_volume_claim = tvb_c_pvc,
-            name = ConfigClass.tvb_cloud_volume_name
+        vre_core_volume = client.V1Volume(
+            persistent_volume_claim = vre_core_pvc,
+            name = ConfigClass.vre_core_volume_name
         )
-        tvb_c_volume_mount = client.V1VolumeMount(
-            mount_path= ConfigClass.tvb_cloud,
-            name = ConfigClass.tvb_cloud_volume_name
+        vre_core_volume_mount = client.V1VolumeMount(
+            mount_path= ConfigClass.vre_core,
+            name = ConfigClass.vre_core_volume_name
         )
         container = client.V1Container(
                     name=job_name,
                     image=container_image,
                     command=command,
                     args=args,
-                    volume_mounts=[volume_mount, tvb_c_volume_mount],
+                    volume_mounts=[volume_mount, vre_core_volume_mount],
                     image_pull_policy="Always")
         # metadata defined in annotations part
-        # node selector defined how to assgin work nodes when creating job container      
+        # node selector defined how to assgin work nodes when creating job container
+        anno = {
+            "input_path":args[1],
+            "output_path":args[3],
+            "project": project_code,
+            "generate_id":generate_id,
+            "uploader": uploader,
+        }
+        for key in event_payload:
+            anno['event_payload_' + key] = str(event_payload[key] )
         template = client.V1PodTemplateSpec(
                     metadata=client.V1ObjectMeta(
-                    labels={"pipeline": ConfigClass.tvbc_copy_pipeline},
-                                                annotations={
-                                                    "input_path":args[1],
-                                                    "output_path":args[3],
-                                                    "project": project_code
-                                                    }),
+                    labels={"pipeline": ConfigClass.copy_pipeline},
+                                                annotations=anno),
                     spec=client.V1PodSpec(restart_policy="Never", 
                                         containers=[container],
-                                        volumes=[volume, tvb_c_volume],
+                                        volumes=[volume, vre_core_volume],
                                         node_selector={"namespace":ConfigClass.namespace}))
                                         
         spec = client.V1JobSpec(

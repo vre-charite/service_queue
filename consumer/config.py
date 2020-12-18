@@ -9,17 +9,18 @@ class ConfigClass(object):
     env = os.environ.get('env')
     if env == 'charite':
         gm_password = 'rabbitmq-jrjmfa9svvC'
-        tvb_cloud_pvc_name = 'greenroom-vre-storage'
+        vre_core_pvc_name = 'greenroom-vre-storage'
     else:
         gm_password = 'indoc101'
-        tvb_cloud_pvc_name = "greenroom-storage-vre-data"
+        vre_core_pvc_name = "greenroom-storage-vre-data"
 
     # folders been watched
     data_lake = "/data/vre-storage"
     claim_name = "greenroom-storage"
-    # tvb mount
-    tvb_cloud = "/vre-data"
-    tvb_cloud_volume_name = "nfsvol-vre-data"
+
+    # vre core mount
+    vre_core = "/vre-data"
+    vre_core_volume_name = "nfsvol-vre-data"
 
     #pipeline name
     generate_pipeline='dicom_edit'
@@ -39,12 +40,13 @@ class ConfigClass(object):
     docker_ip = os.environ.get('docker-registry-ip') 
     dcmedit_image = docker_ip + ':5000/dcmedit:v0.1' if docker_ip else '10.3.7.221:5000/dcmedit:v0.1'
 
-    #tvbc pipeline
-    tvbc_copy_image = docker_ip + ':5000/filecopy:v0.1' if docker_ip else '10.3.7.221:5000/filecopy:v0.1'
-    tvbc_copy_pipeline = 'data_transfer'
+    #copy pipeline
+    copy_image = docker_ip + ':5000/filecopy:v0.1' if docker_ip else '10.3.7.221:5000/filecopy:v0.1'
+    copy_pipeline = 'data_transfer'
     
     #greenroom queue
     gr_queue = 'gr_queue'
     gr_exchange = 'gr_exchange'
 
 # trigger pipeline
+

@@ -27,6 +27,3 @@ class ConfigClass(object):
     gr_queue = 'gr_queue'
     gr_exchange = 'gr_exchange'
 
-    #testpipe queue
-    testpipe_queue = 'testpipe_queue'
-    testpipe_exchange = 'testpipe_exchange'
