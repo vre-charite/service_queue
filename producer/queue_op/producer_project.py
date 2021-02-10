@@ -224,6 +224,53 @@ class NormalProducer:
             res.set_code(EAPIResponseCode.internal_error)
             return res
 
+    def file_move(self, payload):
+        current_app.logger.info(self.routing_key + "  ---------event sending.")        
+        try: 
+            res = APIResponse()
+            input_path = payload.get('input_path', None)
+            uploader = payload.get('uploader', None)
+            generate_id = payload.get('generate_id', None)
+            output_path = payload.get('output_path', None)
+            session_id = payload.get('session_id', 'default_session')
+            job_id = payload.get('job_id', 'default_job')
+            operator = payload.get('operator', None)
+            trash_path = payload.get('trash_path', None)
+            namespace = payload.get('namespace', None)
+            path_list = str(input_path).split('/')
+            log_path = path_list[:4]
+            log_path.append('logs')
+            if not input_path or not uploader or not output_path:
+                res.set_result('Missing required information')
+                res.set_code(EAPIResponseCode.bad_request)
+                return res
+            log_file = '/'.join(log_path)
+            filename = os.path.basename(input_path)
+            # output_path = ConfigClass.vre_data_storage + '/' + self.project + '/raw/' + filename
+            current_app.logger.info(f'input path: {input_path}, file name : {filename}')
+            message_json = {
+                'project': self.project,
+                'input_path': input_path,
+                'output_path': output_path,
+                'trash_path':trash_path,
+                'logfile': log_file,
+                'uploader': uploader,
+                'process_pipeline':ConfigClass.move_pipeline,
+                'create_time': self.create_time,
+                'generate_id': generate_id,
+                'session_id': session_id,
+                'job_id': job_id,
+                'operator': operator,
+                'namespace': namespace
+            }
+            self.producer.publish(message_json)
+            return res
+        except Exception as e:
+            current_app.logger.error(f'Error when trying to parse the message to queue: {e}')
+            res.set_result('Error when trying to parse the message to queue')
+            res.set_code(EAPIResponseCode.internal_error)
+            return res
+
     def invalid_event(self, payload):        
         res = APIResponse()
         project = payload.get('project', None)

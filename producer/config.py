@@ -19,6 +19,7 @@ class ConfigClass(object):
     #pipeline name
     generate_pipeline ='dicom_edit'
     copy_pipeline = 'data_transfer'
+    move_pipeline = 'data_delete'
 
     #data ops gateway url
     data_ops_endpoint = "http://dataops-gr.greenroom:5063"

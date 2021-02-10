@@ -3,6 +3,7 @@ from consumer import QueueConsumer
 from job import KubernetesApiClient
 from kubernetes.client.rest import ApiException
 from pipelines.data_copy import run_pipeline as run_data_copy
+from pipelines.data_move import run_pipeline as run_data_move
 import logging
 import requests
 import pika
@@ -85,25 +86,6 @@ def callback(ch, method, properties, body):
         except Exception as e:
             logger.exception(f'Error occurred while copying file. {e}')
             ch.basic_nack(delivery_tag = method.delivery_tag, requeue=False)
-    # elif method.routing_key == 'tvbcloud.data_uploaded':
-    #     try:
-    #         logger.info('tvbcloud data uploaded')
-    #         logger.info(message)
-    #         input_path = message['input_path']
-    #         output_path = message['output_path']
-    #         logfile = message['logfile']
-    #         uploader = message['uploader']
-    #         try:
-    #             result = run_data_copy(logger, input_path, output_path, logfile, 'tvbcloud', uploader, generate_id=None)
-    #             logger.info(result)
-    #             logger.info("pipeline is processing")
-    #             ch.basic_ack(delivery_tag = method.delivery_tag)
-    #         except Exception as e:
-    #             logger.exception(f'Error occurred while copying file. {e}')
-    #             ch.basic_nack(delivery_tag = method.delivery_tag, requeue=False)
-    #     except Exception as e:
-    #         logger.exception(f'Error occurred while copying file. {e}')
-    #         ch.basic_nack(delivery_tag = method.delivery_tag, requeue=False)
     elif method.routing_key.split('.')[-1] == 'file_copy':
         try:
             logger.info('manual data copy triggered')
@@ -124,6 +106,28 @@ def callback(ch, method, properties, body):
                 ch.basic_nack(delivery_tag = method.delivery_tag, requeue=False)
         except Exception as e:
             logger.exception(f'Error occurred while copying file. {e}')
+            ch.basic_nack(delivery_tag = method.delivery_tag, requeue=False) 
+    elif method.routing_key.split('.')[-1] == 'file_delete':
+        try:
+            logger.info('manual data deletion triggered')
+            logger.info(message)
+            input_path = message['input_path']
+            output_path = message['output_path']
+            logfile = message['logfile']
+            trash_path = message['trash_path']
+            try:
+                if not os.path.exists(logfile):
+                    os.mkdir(logfile)
+                result = run_data_move(logger, input_path, output_path, logfile, trash_path, 
+                    method.routing_key.split('.')[0], message)
+                logger.info(result)
+                logger.info("pipeline is processing")
+                ch.basic_ack(delivery_tag = method.delivery_tag)
+            except Exception as e:
+                logger.exception(f'Error occurred while moving file. {e}')
+                ch.basic_nack(delivery_tag = method.delivery_tag, requeue=False)
+        except Exception as e:
+            logger.exception(f'Error occurred while moving file. {e}')
             ch.basic_nack(delivery_tag = method.delivery_tag, requeue=False)        
     else:
         logger.exception('Undefined Routing key')

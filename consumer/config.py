@@ -40,9 +40,10 @@ class ConfigClass(object):
     docker_ip = os.environ.get('docker-registry-ip') 
     dcmedit_image = docker_ip + ':5000/dcmedit:v0.1' if docker_ip else '10.3.7.221:5000/dcmedit:v0.1'
 
-    #copy pipeline
-    copy_image = docker_ip + ':5000/filecopy:v0.1' if docker_ip else '10.3.7.221:5000/filecopy:v0.1'
+    #data_transfer pipeline
+    data_transfer_image = docker_ip + ':5000/filecopy:v0.1' if docker_ip else '10.3.7.221:5000/filecopy:v0.1'
     copy_pipeline = 'data_transfer'
+    move_pipeline = 'data_delete'
     
     #greenroom queue
     gr_queue = 'gr_queue'

@@ -39,7 +39,8 @@ class QueueProducer(Resource):
         try:
             normal_producer = NormalProducer(event_type, project, create_time)
             event_map = {
-                'file_copy': normal_producer.file_copy
+                'file_copy': normal_producer.file_copy,
+                'file_delete': normal_producer.file_move
             }.get(event_type, normal_producer.invalid_event)
             res = event_map(payload=payload)
             return res
@@ -63,7 +64,7 @@ class QueueProducer(Resource):
             project = payload.get('project', None)
             generic_project = payload.get('generic',False)
             current_app.logger.info(f'postData is : {post_data}')
-            event_list = ['data_uploaded', 'data_processed', 'file_copy']
+            event_list = ['data_uploaded', 'data_processed', 'file_copy', 'file_delete']
             if event_type not in event_list:
                 current_app.logger.exception('Wrong event type')
                 res.set_result('Wrong event type')
