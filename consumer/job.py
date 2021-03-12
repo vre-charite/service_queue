@@ -31,12 +31,13 @@ class KubernetesApiClient(object):
                 name = 'nfsvol'
             )
             # vre core mount
-            vre_core_pvc = client.V1PersistentVolumeClaimVolumeSource(
-                claim_name = ConfigClass.vre_core_pvc_name,
+            vre_core_nfs = client.V1NFSVolumeSource(
+                path = ConfigClass.vre_core_nfs_path,
+                server = ConfigClass.vre_core_nfs_server,
                 read_only = False
             )
             vre_core_volume = client.V1Volume(
-                persistent_volume_claim = vre_core_pvc,
+                nfs= vre_core_nfs,
                 name = ConfigClass.vre_core_volume_name
             )
             vre_core_volume_mount = client.V1VolumeMount(
@@ -91,12 +92,13 @@ class KubernetesApiClient(object):
             name = 'nfsvol'
         )
         # vre core mount
-        vre_core_pvc = client.V1PersistentVolumeClaimVolumeSource(
-            claim_name = ConfigClass.vre_core_pvc_name,
+        vre_core_nfs = client.V1NFSVolumeSource(
+            path = ConfigClass.vre_core_nfs_path,
+            server = ConfigClass.vre_core_nfs_server,
             read_only = False
         )
         vre_core_volume = client.V1Volume(
-            persistent_volume_claim = vre_core_pvc,
+            nfs= vre_core_nfs,
             name = ConfigClass.vre_core_volume_name
         )
         vre_core_volume_mount = client.V1VolumeMount(
@@ -159,12 +161,13 @@ class KubernetesApiClient(object):
             name = 'nfsvol'
         )
         # vre core mount
-        vre_core_pvc = client.V1PersistentVolumeClaimVolumeSource(
-            claim_name = ConfigClass.vre_core_pvc_name,
+        vre_core_nfs = client.V1NFSVolumeSource(
+            path = ConfigClass.vre_core_nfs_path,
+            server = ConfigClass.vre_core_nfs_server,
             read_only = False
         )
         vre_core_volume = client.V1Volume(
-            persistent_volume_claim = vre_core_pvc,
+            nfs= vre_core_nfs,
             name = ConfigClass.vre_core_volume_name
         )
         vre_core_volume_mount = client.V1VolumeMount(

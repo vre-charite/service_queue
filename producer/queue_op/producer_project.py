@@ -238,13 +238,11 @@ class NormalProducer:
             trash_path = payload.get('trash_path', None)
             namespace = payload.get('namespace', None)
             path_list = str(input_path).split('/')
-            log_path = path_list[:4]
-            log_path.append('logs')
+
             if not input_path or not uploader or not output_path:
                 res.set_result('Missing required information')
                 res.set_code(EAPIResponseCode.bad_request)
                 return res
-            log_file = '/'.join(log_path)
             filename = os.path.basename(input_path)
             # output_path = ConfigClass.vre_data_storage + '/' + self.project + '/raw/' + filename
             current_app.logger.info(f'input path: {input_path}, file name : {filename}')
@@ -253,7 +251,6 @@ class NormalProducer:
                 'input_path': input_path,
                 'output_path': output_path,
                 'trash_path':trash_path,
-                'logfile': log_file,
                 'uploader': uploader,
                 'process_pipeline':ConfigClass.move_pipeline,
                 'create_time': self.create_time,

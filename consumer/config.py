@@ -10,9 +10,14 @@ class ConfigClass(object):
     if env == 'charite':
         gm_password = 'rabbitmq-jrjmfa9svvC'
         vre_core_pvc_name = 'greenroom-vre-storage'
+    elif env == 'dev':
+        gm_password = 'indoc101'
+        vre_core_nfs_path = "/var/Indoc-NFS/kubernetes_dev/vre-vre-data-pvc-7f9b12b5-b94d-4e59-84a5-c2f3256aa07f/"
+        vre_core_nfs_server = "10.3.1.252"
     else:
         gm_password = 'indoc101'
-        vre_core_pvc_name = "greenroom-storage-vre-data"
+        vre_core_nfs_path = "/var/Indoc-NFS/kubernetes/vre-vre-data-pvc-fde27714-6c21-4c27-add5-8109b1193d87"
+        vre_core_nfs_server = "10.3.1.252"
 
     # folders been watched
     data_lake = "/data/vre-storage"
@@ -49,5 +54,4 @@ class ConfigClass(object):
     gr_queue = 'gr_queue'
     gr_exchange = 'gr_exchange'
 
-# trigger pipeline
 

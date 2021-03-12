@@ -5,6 +5,7 @@ import importlib
 import logging
 import logging.handlers
 import os
+import sys
 
 def create_app(extra_config_settings={}):
     # initialize app and config app
@@ -28,7 +29,19 @@ def create_app(extra_config_settings={}):
                               %(levelname)s - %(message)s')
     file_handler = logging.FileHandler('./logs/queue.log')
     file_handler.setFormatter(formatter)
-    app.logger.addHandler(file_handler)
     app.logger.setLevel(logging.DEBUG)
+    # Standard Out Handler
+    stdout_handler = logging.StreamHandler(sys.stdout)
+    stdout_handler.setFormatter(formatter)
+    stdout_handler.setLevel(logging.DEBUG)
+    # Standard Err Handler
+    stderr_handler = logging.StreamHandler(sys.stderr)
+    stderr_handler.setFormatter(formatter)
+    stderr_handler.setLevel(logging.ERROR)
+    
+    app.logger.addHandler(file_handler)
+    app.logger.addHandler(stdout_handler)
+    app.logger.addHandler(stderr_handler)
+    
     app.logger.info('start')   
     return app
