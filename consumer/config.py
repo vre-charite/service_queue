@@ -9,7 +9,8 @@ class ConfigClass(object):
     env = os.environ.get('env')
     if env == 'charite':
         gm_password = 'rabbitmq-jrjmfa9svvC'
-        vre_core_pvc_name = 'greenroom-vre-storage'
+        vre_core_nfs_server = "bihnas2.charite.de"
+        vre_core_nfs_path = '/AG-Ritter-VRE/VRE-namespace/vre-vre-data-pvc-ab20736f-3a07-4f3e-bfc9-5c804e6a34d4/'
     elif env == 'dev':
         gm_password = 'indoc101'
         vre_core_nfs_path = "/var/Indoc-NFS/kubernetes_dev/vre-vre-data-pvc-7f9b12b5-b94d-4e59-84a5-c2f3256aa07f/"
