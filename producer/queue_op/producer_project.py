@@ -33,13 +33,15 @@ class ProducerGenerate:
                     res.set_result('Not a valid path')
                     res.set_code(EAPIResponseCode.bad_request)
                     return res
-            base_path = path_list[:4]
             work_path = path_list[:4]
             log_path = path_list[:4]
             work_path.append('workdir')
             log_path.append('logs')
+            # output path
+            base_path = path_list[:4]
             base_path.append('processed')
             base_path.append(ConfigClass.generate_pipeline)
+            base_path.append(str(int(time.time())))
             # check if file typs is zip
             file_type = filetype.guess(input_path)
             current_app.logger.info(f'input path: {input_path}, file type : {file_type}')
@@ -53,7 +55,7 @@ class ProducerGenerate:
                         'project': self.project,
                         'input_path': input_path,
                         'pipeline': ConfigClass.generate_pipeline,
-                        'output_path': '/'.join(base_path),
+                        'output_path': '/'.join(base_path), # “/data/vre-storage/{project_code}/processed/{pipeline}/{timestamp}/file1.zip”. 
                         'work_path': '/'.join(work_path),
                         'log_path': '/'.join(log_path),
                         'generate_id': generate_id,

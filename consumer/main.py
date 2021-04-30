@@ -20,7 +20,7 @@ def millis():
 
     return current_milli_time
 
-def generate_pipeline( input_path, output_path, work_path, log_file, job_name, project, generate_id, uploader):
+def generate_pipeline( input_path, output_path, work_path, log_file, job_name, project, generate_id, uploader, event_payload):
     #create kubernetes job to run Generate 'dcm_edit' pipeline
     volume_path = ConfigClass.data_lake
     command = ["/usr/bin/python3", "scripts/dcm_edit.py"]
@@ -28,7 +28,7 @@ def generate_pipeline( input_path, output_path, work_path, log_file, job_name, p
     try:
         api_client = KubernetesApiClient()
         job_api_client = api_client.create_batch_api_client()
-        job = api_client.create_job_object(job_name, ConfigClass.dcmedit_image, volume_path, command, args, uploader)
+        job = api_client.create_job_object(job_name, ConfigClass.dcmedit_image, volume_path, command, args, uploader, event_payload)
         api_response = job_api_client.create_namespaced_job(
             namespace=ConfigClass.namespace,
             body=job)
@@ -39,7 +39,7 @@ def generate_pipeline( input_path, output_path, work_path, log_file, job_name, p
         logger.exception(e)
         return
 
-def generate_pipeline_common( input_path, output_path, work_path, log_file, job_name, project, generate_id, uploader):
+def generate_pipeline_common( input_path, output_path, work_path, log_file, job_name, project, generate_id, uploader, event_payload):
     #create kubernetes job to run Generate 'dcm_edit' pipeline
     volume_path = ConfigClass.data_lake
     command = ["/usr/bin/python3", "scripts/dcm_edit.py"]
@@ -48,7 +48,7 @@ def generate_pipeline_common( input_path, output_path, work_path, log_file, job_
     try:
         api_client = KubernetesApiClient()
         job_api_client = api_client.create_batch_api_client()
-        job = api_client.create_job_object(job_name, ConfigClass.dcmedit_image, volume_path, command, args, uploader)
+        job = api_client.create_job_object(job_name, ConfigClass.dcmedit_image, volume_path, command, args, uploader, event_payload)
         api_response = job_api_client.create_namespaced_job(
             namespace=ConfigClass.namespace,
             body=job)
@@ -77,11 +77,14 @@ def callback(ch, method, properties, body):
                 os.mknod(log_file)
             result = generate_pipeline(
                 message['input_path'], 
-                output_path, message['work_path'], 
+                output_path,
+                message['work_path'], 
                 log_file, 
                 job_name.lower(),
                 message['project'],
-                generate_id, message['uploader'])
+                generate_id,
+                message['uploader'],
+                message)
             logger.info(result)
             logger.info("pipeline is processing")
             ch.basic_ack(delivery_tag = method.delivery_tag)

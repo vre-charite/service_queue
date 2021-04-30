@@ -16,7 +16,7 @@ class KubernetesApiClient(object):
     def create_batch_api_client(self):
             return client.BatchV1Api(client.ApiClient(self.configuration))
 
-    def create_job_object(self, job_name, container_image, volume_path, command, args, uploader):
+    def create_job_object(self, job_name, container_image, volume_path, command, args, uploader, event_payload):
             # define the persistent volume claim and mount pvc to k8s job container
             pvc = client.V1PersistentVolumeClaimVolumeSource(
                 claim_name = ConfigClass.claim_name,
@@ -51,13 +51,17 @@ class KubernetesApiClient(object):
                         args=args,
                         volume_mounts=[volume_mount, vre_core_volume_mount],
                         image_pull_policy="Always")
+            # parse annotation 
+            anno = {"input_file":args[1],
+                    "output_path":args[3],
+                    "uploader": uploader}
+            for key in event_payload:
+                anno['event_payload_' + key] = str(event_payload[key])
             # metadata defined in annotations part
             # node selector defined how to assgin work nodes when creating job container      
             template = client.V1PodTemplateSpec(
                         metadata=client.V1ObjectMeta(labels={"pipeline": ConfigClass.generate_pipeline},
-                                                    annotations={"input_file":args[1],
-                                                                "output_path":args[3],
-                                                                "uploader": uploader}),
+                                                    annotations=anno),
                         spec=client.V1PodSpec(restart_policy="Never", 
                                             containers=[container],
                                             volumes=[volume, vre_core_volume],
