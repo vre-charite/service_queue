@@ -4,16 +4,15 @@ from job import KubernetesApiClient
 from kubernetes.client.rest import ApiException
 from pipelines.data_copy import run_pipeline as run_data_copy
 from pipelines.data_move import run_pipeline as run_data_move
-import logging
 import requests
 import pika
 import time
 import json
 import os 
 import sys
+from logger_services.logger_factory_service import SrvLoggerFactory
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+logger = SrvLoggerFactory('pipeline_message_consumer').get_logger()
 
 def millis():
     current_milli_time = str(round(time.time() * 1000))
@@ -24,7 +23,8 @@ def generate_pipeline( input_path, output_path, work_path, log_file, job_name, p
     #create kubernetes job to run Generate 'dcm_edit' pipeline
     volume_path = ConfigClass.data_lake
     command = ["/usr/bin/python3", "scripts/dcm_edit.py"]
-    args = [ "-i", input_path, "-o", output_path, "-t", work_path, "-l", log_file, "-p", project, "-s", generate_id]
+    env = os.environ.get('env')
+    args = [ "-i", input_path, "-o", output_path, "-t", work_path, "-l", log_file, "-p", project, "-s", generate_id, "-env", env]
     try:
         api_client = KubernetesApiClient()
         job_api_client = api_client.create_batch_api_client()
@@ -66,15 +66,10 @@ def callback(ch, method, properties, body):
     if method.routing_key =='generate.data_uploaded':
         output_path = message['output_path']
         log_file = message['log_path']+'/'+ConfigClass.generate_pipeline+'.log'
-        isExists = os.path.exists(output_path)
         generate_id = message['generate_id']
         logger.info(f'GenerateID is {generate_id}')
         job_name = message['project']+'-'+ millis()
         try:
-            if not isExists:
-                os.makedirs(output_path)
-            if not os.path.exists(log_file):
-                os.mknod(log_file)
             result = generate_pipeline(
                 message['input_path'], 
                 output_path,
@@ -144,29 +139,12 @@ def main():
     if not os.path.exists('./logs'):
         print(os.path.exists('./logs'))
         os.makedirs('./logs')
-    formatter = logging.Formatter('%(asctime)s - %(name)s - \
-                              %(levelname)s - %(message)s')
-    file_handler = logging.FileHandler('./logs/consumer.log')
-    file_handler.setFormatter(formatter)
-    logger.setLevel(logging.DEBUG)
-    # Standard Out Handler
-    stdout_handler = logging.StreamHandler(sys.stdout)
-    stdout_handler.setFormatter(formatter)
-    stdout_handler.setLevel(logging.DEBUG)
-    # Standard Err Handler
-    stderr_handler = logging.StreamHandler(sys.stderr)
-    stderr_handler.setFormatter(formatter)
-    stderr_handler.setLevel(logging.ERROR)
-    # register handlers
-    logger.addHandler(file_handler)
-    logger.addHandler(stdout_handler)
-    logger.addHandler(stderr_handler)
     consumer = QueueConsumer(routing_key='#', exchange_name=ConfigClass.gr_exchange, exchange_type='topic', queue=ConfigClass.gr_queue)
     consumer.channel.basic_qos(prefetch_count=1)
     consumer.channel.basic_consume(
         queue=consumer.queue, 
         on_message_callback=callback)     
-    logger.info('Start consuming')
+    logger.info('=========================Start consuming================================')
     consumer.channel.start_consuming()
 
 if __name__ == "__main__":

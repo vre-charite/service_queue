@@ -1,6 +1,7 @@
 from flask import Flask, request
 from flask_cors import CORS
 from config import ConfigClass
+from app import api
 import importlib
 import logging
 import logging.handlers
@@ -17,11 +18,7 @@ def create_app(extra_config_settings={}):
         allow_headers=["Content-Type", "Authorization","Access-Control-Allow-Credentials"],
         supports_credentials=True, 
         intercept_exceptions=False)
-
-    # dynamic add the dataset module by the config we set
-    for apis in ConfigClass.api_modules:
-        api = importlib.import_module(apis)
-        api.module_api.init_app(app)
+    api.module_api.init_app(app)
     if not os.path.exists('./logs'):
         print(os.path.exists('./logs'))
         os.makedirs('./logs') 

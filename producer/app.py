@@ -1,4 +1,6 @@
 from app import create_app
+from config import ConfigClass
+import os
 
 app = create_app()
 

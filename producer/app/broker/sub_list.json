@@ -1,0 +1,15 @@
+{
+    "legal_consumer_05": {
+        "content": {
+            "exchange": {
+                "name": "FANOUT_TOPIC",
+                "type": "fanout"
+            },
+            "location": "http://192.168.2.31:6060/broker/hooktest",
+            "queue": "L05",
+            "routing_key": "legaltest",
+            "sub_name": "legal_consumer_05"
+        },
+        "location": "http://192.168.2.31:6060/broker/hooktest"
+    }
+}

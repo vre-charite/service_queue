@@ -1,5 +1,5 @@
 from models.api_response import APIResponse, EAPIResponseCode
-from queue_op.connection_handler import ConnectionHandler
+from .connection_handler import ConnectionHandler
 from flask import request, current_app
 from flask_restx import Api, Resource, fields
 import pika 

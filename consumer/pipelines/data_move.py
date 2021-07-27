@@ -8,7 +8,8 @@ def run_pipeline(logger, input_path, output_path,
     #create kubernetes job to run Generate 'dcm_edit' pipeline
     volume_path = ConfigClass.data_lake
     command = ["/usr/bin/python3", "scripts/file_move.py"]
-    args = ["-i", input_path, "-o", output_path, "-t", trash_path]
+    args = ["-i", input_path, "-o", output_path, "-t", trash_path,
+        "-env", ConfigClass.env, "-p", event_payload["project"], "-op", event_payload["operator"]]
     try:
         api_client = KubernetesApiClient()
         job_api_client = api_client.create_batch_api_client()

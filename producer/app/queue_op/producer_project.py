@@ -1,8 +1,7 @@
 from flask import request, current_app
 from models.api_response import APIResponse, EAPIResponseCode
-from queue_op.message import MessagePublish
+from .message import MessagePublish
 from config import ConfigClass
-import filetype
 import time
 import os
 import datetime
@@ -140,46 +139,28 @@ class ProducerGenerate(NormalProducer):
                 res.set_result('Missing required information')
                 res.set_code(EAPIResponseCode.bad_request)
                 return res
-            path_list = str(input_path).split('/')
-            if len(path_list) < 6:
-                res.set_result('Not a valid path')
-                res.set_code(EAPIResponseCode.bad_request)
-                return res
-            work_path = path_list[:4]
-            log_path = path_list[:4]
-            work_path.append('workdir')
-            log_path.append('logs')
-            # output path
-            base_path = path_list[:4]
-            base_path.append('processed')
-            base_path.append(ConfigClass.generate_pipeline)
-            base_path.append(str(int(time.time())))
+            output_path = '/'.join(input_path.split('/')[:-1])
             # check if file typs is zip
-            file_type = filetype.guess(input_path)
+            file_type = input_path[-4:]
             current_app.logger.info(f'input path: {input_path}, file type : {file_type}')
-            if file_type is None:
-                current_app.logger.error('Can not recognize file type')
+            if file_type == '.zip':
+                message_json = {
+                    'project': self.project,
+                    'input_geid': input_geid,
+                    'input_path': input_path,
+                    'pipeline': ConfigClass.generate_pipeline,
+                    'output_path': output_path,
+                    'work_path': ConfigClass.WORK_PATH,
+                    'log_path': ConfigClass.LOG_PATH,
+                    'generate_id': generate_id,
+                    'uploader': uploader,
+                    'create_time': self.create_time
+                }
+                self.producer.publish(message_json)
+            else:
+                current_app.logger.error(f'Wrong file type: {file_type}')
                 res.set_result('Invalid File Type')
-                res.set_code(EAPIResponseCode.bad_request) 
-            else: 
-                if file_type.extension == 'zip':
-                    message_json = {
-                        'project': self.project,
-                        'input_geid': input_geid,
-                        'input_path': input_path,
-                        'pipeline': ConfigClass.generate_pipeline,
-                        'output_path': '/'.join(base_path), # “/data/vre-storage/{project_code}/processed/{pipeline}/{timestamp}/file1.zip”. 
-                        'work_path': '/'.join(work_path),
-                        'log_path': '/'.join(log_path),
-                        'generate_id': generate_id,
-                        'uploader': uploader,
-                        'create_time': self.create_time
-                    }
-                    self.producer.publish(message_json)
-                else:
-                    current_app.logger.error(f'Wrong file type: {file_type}')
-                    res.set_result('Invalid File Type')
-                    res.set_code(EAPIResponseCode.bad_request)        
+                res.set_code(EAPIResponseCode.bad_request)        
             return res
         except FileNotFoundError as not_found:
             current_app.logger.error(f'File not found in given path: {not_found}')

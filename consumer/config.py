@@ -55,4 +55,4 @@ class ConfigClass(object):
     gr_queue = 'gr_queue'
     gr_exchange = 'gr_exchange'
 
-
+    # trigger pipeline

@@ -1,0 +1,1 @@
+service_namespace = "pipeline_message_consumer"

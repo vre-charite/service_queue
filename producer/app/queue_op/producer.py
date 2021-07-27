@@ -1,7 +1,7 @@
 from flask import request, current_app
 from flask_restx import Api, Resource, fields
 from models.api_response import APIResponse, EAPIResponseCode
-from queue_op.producer_project import ProducerGenerate, NormalProducer
+from .producer_project import ProducerGenerate, NormalProducer
 from config import ConfigClass
 import pika
 import json 
