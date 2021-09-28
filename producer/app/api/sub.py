@@ -9,6 +9,7 @@ class BrokerSubscriber(Resource):
     def post(self):
         res = APIResponse()
         event = request.get_json()
+
         # payload validation
         required = ['consumer_location', 'consumer_name', 'queue', 'routing_key']
         for field in required:
@@ -16,6 +17,7 @@ class BrokerSubscriber(Resource):
                 res.set_code(EAPIResponseCode.bad_request)
                 res.set_result("param '{}' is required.".format(field))
                 return res.response, res.code
+
         queue = event.get('queue')
         routing_key = event.get('routing_key')
         consumer_name = event.get('consumer_name')
@@ -23,6 +25,7 @@ class BrokerSubscriber(Resource):
         exchange = event.get('exchange', {
             "name": "FANOUT_TOPIC",
             "type": "fanout"})
+
         # exchange validation
         required = ['name', 'type']
         for field in required:
@@ -30,6 +33,7 @@ class BrokerSubscriber(Resource):
                 res.set_code(EAPIResponseCode.bad_request)
                 res.set_result("param '{}' is required in exchange object.".format(field))
                 return res.response, res.code
+
         create_timestamp = event.get('create_timestamp', time.time())
         event['create_timestamp'] = create_timestamp
         event['exchange'] = exchange

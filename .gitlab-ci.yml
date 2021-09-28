@@ -4,6 +4,7 @@ variables:
   REGISTRY: 10.32.42.225:5000
   PRODUCER_CONTAINER_IMAGE: ${REGISTRY}/queue-producer:${CI_COMMIT_SHORT_SHA}
   CONSUMER_CONTAINER_IMAGE: ${REGISTRY}/queue-consumer:${CI_COMMIT_SHORT_SHA}
+  SOCKETIO_CONTAINER_IMAGE: ${REGISTRY}/queue-socketio:${CI_COMMIT_SHORT_SHA}
 
 build-producer:
   stage: build
@@ -61,3 +62,30 @@ deploy-consumer:
   script:
     - sed -i "s/<VERSION>/${CI_COMMIT_SHORT_SHA}/g" kubernetes/consumer-deployment.yaml
     - kubectl apply -f kubernetes/consumer-deployment.yaml
+
+
+build-socketio:
+  stage: build
+  tags:
+    - VRE-Deployment
+  only:
+    changes:
+      - kubernetes/socketio-deployment.yaml
+      - socketio/*
+  script:
+    - docker login ${REGISTRY} -u ${DOCKER_USER} -p ${DOCKER_PASSWORD}
+    - docker build -t ${SOCKETIO_CONTAINER_IMAGE} socketio/.
+    - docker push ${SOCKETIO_CONTAINER_IMAGE}
+
+deploy-socketio:
+  stage: deploy
+  tags:
+    - VRE-Deployment
+  only:
+    changes:
+      - kubernetes/socketio-deployment.yaml
+      - socketio/*
+  script:
+    - sed -i "s/<VERSION>/${CI_COMMIT_SHORT_SHA}/g" kubernetes/socketio-deployment.yaml
+    - kubectl apply -f kubernetes/socketio-deployment.yaml
+

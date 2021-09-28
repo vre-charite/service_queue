@@ -1,11 +1,12 @@
 import json
 import pika
+import pickle
 from .rabbit_operator import RabbitConnection
 from .consumer_dynamic import ConsumerDynamic, eventhook
 from .sub_list import SubscriberList
 
 def do_publish(queue, routing_key, body,
-        exchange_name, exchange_type):
+        exchange_name, exchange_type, binary=False):
     # publish a event to all subscribers
     my_rabbit = RabbitConnection()
     connection_instance = my_rabbit.init_connection()
@@ -21,7 +22,8 @@ def do_publish(queue, routing_key, body,
     channel.basic_publish(
         exchange=exchange_name,
         routing_key=routing_key,
-        body=json.dumps(body),
+        # for socketio, we will send the binary hex
+        body=pickle.dumps(body) if binary else json.dumps(body),
         properties=pika.BasicProperties(
             delivery_mode = 2, # make message persistent
         )

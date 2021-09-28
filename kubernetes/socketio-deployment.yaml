@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: queue-socketio
+  namespace: greenroom
+  labels:
+    app: queue-socketio
+    env: charite
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: queue-socketio
+      env: charite
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 33%
+  template:
+    metadata:
+      labels:
+        app: queue-socketio
+        env: charite
+    spec:
+      containers:
+        - name: queue-socketio
+          image: 10.32.42.225:5000/queue-socketio:<VERSION>
+          env:
+          - name: env
+            value: "charite"
+          - name: docker-registry-ip
+            value: "10.32.42.225"
+          resources:
+            requests:
+              memory: "1000Mi"
+              cpu: "1"
+            limits:
+              memory: "1000Mi"
+              cpu: "1"
+          volumeMounts:
+          - name: nfsvol
+            mountPath: /data/vre-storage
+          - name: nfsvol-vre-data
+            mountPath: /vre-data
+      nodeSelector:
+        namespace: greenroom
+      volumes:
+        - name: nfsvol
+          persistentVolumeClaim:
+            claimName: greenroom-storage
+        - name: nfsvol-vre-data
+          nfs:
+            server: bihnas2.charite.de
+            path: /AG-Ritter-VRE/VRE-namespace/vre-vre-data-pvc-ab20736f-3a07-4f3e-bfc9-5c804e6a34d4/
+#          persistentVolumeClaim:
+#            claimName: greenroom-vre-storage

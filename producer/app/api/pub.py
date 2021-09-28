@@ -8,6 +8,7 @@ class BrokerPublisher(Resource):
     def post(self):
         res = APIResponse()
         event = request.get_json()
+
         # payload validation
         required = ['queue', 'routing_key', 'event_type', 'payload']
         for field in required:
@@ -15,6 +16,7 @@ class BrokerPublisher(Resource):
                 res.set_code(EAPIResponseCode.bad_request)
                 res.set_result("param '{}' is required.".format(field))
                 return res.response, res.code
+
         queue = event.get('queue')
         event_type = event.get('event_type')
         payload = event.get('payload')
@@ -22,19 +24,26 @@ class BrokerPublisher(Resource):
         exchange = event.get('exchange', {
             "name": "FANOUT_TOPIC",
             "type": "fanout"})
+
         # exchange validation
         required = ['name', 'type']
         for field in required:
             if field not in exchange:
                 res.set_code(EAPIResponseCode.bad_request)
                 res.set_result("param '{}' is required in exchange object.".format(field))
-                return res.response, res.code
+                return res.response, res.code            
+
         create_timestamp = event.get('create_timestamp', time.time())
         event['create_timestamp'] = create_timestamp
         event['exchange'] = exchange
+
+        # add the optional params for the socketio
+        # since the socketio recieve will need the message in binary
         do_publish(queue, routing_key, event,
             exchange_name=exchange['name'],
-            exchange_type=exchange['type'])
+            exchange_type=exchange['type'], 
+            binary=event.get("binary", False))
+
         res.set_code(EAPIResponseCode.success)
         res.set_result(event)
         return res.response, res.code
