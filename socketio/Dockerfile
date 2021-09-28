@@ -10,5 +10,4 @@ USER deploy
 RUN pip install --no-cache-dir -r requirements.txt --user --proxy="http://proxy.charite.de:8080/"
 ENV PATH="/home/deploy/.local/bin:${PATH}"
 #CMD ["./gunicorn_starter.sh"]
-CMD ["python","app.py"]
-
+CMD python run.py
