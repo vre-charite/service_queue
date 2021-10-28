@@ -19,7 +19,7 @@ build-producer:
       - producer/queue_op/*
   script:
     - docker login ${REGISTRY} -u ${DOCKER_USER} -p ${DOCKER_PASSWORD}
-    - docker build -t ${PRODUCER_CONTAINER_IMAGE} producer/.
+    - docker build --build-arg http_proxy=http://proxy.charite.de:8080/ --build-arg https_proxy=http://proxy.charite.de:8080/ -t ${PRODUCER_CONTAINER_IMAGE} producer/.
     - docker push ${PRODUCER_CONTAINER_IMAGE}
 
 deploy-producer:
@@ -48,7 +48,7 @@ build-consumer:
       - consumer/*
   script:
     - docker login ${REGISTRY} -u ${DOCKER_USER} -p ${DOCKER_PASSWORD}
-    - docker build -t ${CONSUMER_CONTAINER_IMAGE} consumer/.
+    - docker build --build-arg http_proxy=http://proxy.charite.de:8080/ --build-arg https_proxy=http://proxy.charite.de:8080/ -t ${CONSUMER_CONTAINER_IMAGE} consumer/.
     - docker push ${CONSUMER_CONTAINER_IMAGE}
 
 deploy-consumer:
@@ -74,7 +74,7 @@ build-socketio:
       - socketio/*
   script:
     - docker login ${REGISTRY} -u ${DOCKER_USER} -p ${DOCKER_PASSWORD}
-    - docker build -t ${SOCKETIO_CONTAINER_IMAGE} socketio/.
+    - docker --build-arg http_proxy=http://proxy.charite.de:8080/ --build-arg https_proxy=http://proxy.charite.de:8080/ build -t ${SOCKETIO_CONTAINER_IMAGE} socketio/.
     - docker push ${SOCKETIO_CONTAINER_IMAGE}
 
 deploy-socketio:
@@ -88,4 +88,3 @@ deploy-socketio:
   script:
     - sed -i "s/<VERSION>/${CI_COMMIT_SHORT_SHA}/g" kubernetes/socketio-deployment.yaml
     - kubectl apply -f kubernetes/socketio-deployment.yaml
-
