@@ -8,7 +8,7 @@ def run_pipeline(logger, input_path, output_path,
     #create kubernetes job to run Generate 'dcm_edit' pipeline
     volume_path = ConfigClass.data_lake
     command = ["/usr/bin/python3", "scripts/file_move.py"]
-    args = ["-i", input_path, "-o", output_path, "-t", trash_path,
+    args = ["-i", input_path, "-o", output_path, "-t", trash_path, "-j", event_payload["job_id"],
         "-env", ConfigClass.env, "-p", event_payload["project"], "-op", event_payload["operator"], '-at', 
         auth_token["at"], '-rt', auth_token["rt"]]
 
@@ -40,7 +40,7 @@ def folder_delete_pipeline(logger, input_geid,
     #create kubernetes job to run Generate 'folder_delete_pipeline'
     volume_path = ConfigClass.data_lake
     command = ["/usr/bin/python3", "scripts/folder_move.py"]
-    args = ["-i", input_geid, "-t", trash_path,
+    args = ["-i", input_geid, "-t", trash_path, "-j", event_payload["job_id"],
         "-env", ConfigClass.env, "-p", event_payload["project"], "-op", event_payload["operator"], '-at', 
         auth_token["at"], '-rt', auth_token["rt"]]
 

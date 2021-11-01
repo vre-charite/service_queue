@@ -22,6 +22,8 @@ class ConfigClass(object):
     vault = vault_factory()
     env = os.environ.get('env')
     disk_namespace = os.environ.get('namespace')
+    CONFIG_CENTER_ENABLED = os.environ.get("CONFIG_CENTER_ENABLED")
+    CONFIG_CENTER_BASE_URL = os.environ.get("CONFIG_CENTER_BASE_URL")
     version = "0.1.0"
     # disk mounts
     NFS_ROOT_PATH = "./"

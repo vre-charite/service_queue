@@ -13,3 +13,4 @@ RUN pip install --no-cache-dir -r requirements.txt --user
 ENV PATH="/home/deploy/.local/bin:${PATH}"
 # CMD ["./gunicorn_starter.sh"]
 CMD python run.py
+
