@@ -74,7 +74,7 @@ build-socketio:
       - socketio/*
   script:
     - docker login ${REGISTRY} -u ${DOCKER_USER} -p ${DOCKER_PASSWORD}
-    - docker --build-arg http_proxy=http://proxy.charite.de:8080/ --build-arg https_proxy=http://proxy.charite.de:8080/ build -t ${SOCKETIO_CONTAINER_IMAGE} socketio/.
+    - docker build --build-arg http_proxy=http://proxy.charite.de:8080/ --build-arg https_proxy=http://proxy.charite.de:8080/ build -t ${SOCKETIO_CONTAINER_IMAGE} socketio/.
     - docker push ${SOCKETIO_CONTAINER_IMAGE}
 
 deploy-socketio:
