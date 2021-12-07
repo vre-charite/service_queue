@@ -30,7 +30,7 @@ spec:
           env:
           - name: env
             value: "charite"
-          - name: docker-registry-ip
+          - name: docker_registry_ip
             value: "10.32.42.225"
           - name: CONFIG_CENTER_ENABLED
             value: "true"

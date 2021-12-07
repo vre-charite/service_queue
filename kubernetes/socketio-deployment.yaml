@@ -29,7 +29,11 @@ spec:
           env:
           - name: env
             value: "charite"
-          - name: docker-registry-ip
+          - name: CONFIG_CENTER_ENABLED
+            value: "true"
+          - name: CONFIG_CENTER_BASE_URL
+            value: "http://common.utility:5062/"
+          - name: docker_registry_ip
             value: "10.32.42.225"
           resources:
             requests:
