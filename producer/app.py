@@ -6,4 +6,4 @@ app = create_app()
 
 # add to https
 if __name__ == '__main__':
-	app.run(host='0.0.0.0', port=6060, debug=True)
+	app.run(host=ConfigClass.settings.host, port=ConfigClass.settings.port, debug=True)

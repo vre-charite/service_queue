@@ -17,6 +17,8 @@ class BrokerPublisher(Resource):
                 res.set_result("param '{}' is required.".format(field))
                 return res.response, res.code
 
+        print(event)
+
         queue = event.get('queue')
         event_type = event.get('event_type')
         payload = event.get('payload')
@@ -43,6 +45,7 @@ class BrokerPublisher(Resource):
             exchange_name=exchange['name'],
             exchange_type=exchange['type'], 
             binary=event.get("binary", False))
+        print("AAAA")
 
         res.set_code(EAPIResponseCode.success)
         res.set_result(event)

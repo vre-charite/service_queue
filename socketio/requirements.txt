@@ -16,6 +16,10 @@ pamqp==2.3.0
 pika==1.2.0
 python-engineio==4.2.0
 python-socketio==5.3.0
+requests==2.26.0
 six==1.16.0
 typing-extensions==3.10.0.0
 yarl==1.6.3
+python-dotenv==0.19.1
+pydantic==1.8.2
+

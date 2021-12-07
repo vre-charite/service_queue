@@ -27,7 +27,7 @@ def run_pipeline(logger, dataset_geid, access_token, refresh_token):
             namespace=ConfigClass.namespace,
             body=job)
         logger.info(api_response.status)
-        logger.info(api_response)
+        # logger.info(api_response)
         return api_response
     except ApiException as e:
         logger.exception(e)

@@ -1,10 +1,11 @@
-from flask import request, current_app
-from models.api_response import APIResponse, EAPIResponseCode
-from .message import MessagePublish
-from config import ConfigClass
-import time
 import os
-import datetime
+
+from flask import current_app
+
+from config import ConfigClass
+from models.api_response import APIResponse
+from models.api_response import EAPIResponseCode
+from app.queue_op.message import MessagePublish
 
 
 class NormalProducer:
@@ -21,11 +22,9 @@ class NormalProducer:
                                        queue=ConfigClass.gr_queue)
 
     def bids_validate(self, payload):
-        current_app.logger.info(
-            self.routing_key + "  ---------bids_validate event sending.")
+        current_app.logger.info(self.routing_key + "  ---------bids_validate event sending.")
+        res = APIResponse()
         try:
-            res = APIResponse()
-
             dataset_geid = payload.get('dataset_geid', None)
             access_token = payload.get('access_token', None)
             refresh_token = payload.get('refresh_token', None)
@@ -45,16 +44,15 @@ class NormalProducer:
             return res
 
         except Exception as e:
-            current_app.logger.error(
-                f'Error when trying to parse the message to queue: {e}')
+            current_app.logger.error(f'Error when trying to parse the message to queue: {e}')
             res.set_result('Error when trying to parse the message to queue')
             res.set_code(EAPIResponseCode.internal_error)
             return res
 
     def file_copy(self, payload):
         current_app.logger.info(self.routing_key + "  ---------event sending.")
+        res = APIResponse()
         try:
-            res = APIResponse()
             destination_geid = payload.get('destination_geid', None)
             input_geid = payload.get('input_geid', None)
             input_path = payload.get('input_path', None)
@@ -99,16 +97,15 @@ class NormalProducer:
             self.producer.publish(message_json)
             return res
         except Exception as e:
-            current_app.logger.error(
-                f'Error when trying to parse the message to queue: {e}')
+            current_app.logger.error(f'Error when trying to parse the message to queue: {e}')
             res.set_result('Error when trying to parse the message to queue')
             res.set_code(EAPIResponseCode.internal_error)
             return res
 
     def file_move(self, payload):
         current_app.logger.info(self.routing_key + "  ---------event sending.")
+        res = APIResponse()
         try:
-            res = APIResponse()
             input_geid = payload.get('input_geid', None)
             input_path = payload.get('input_path', None)
             uploader = payload.get('uploader', None)
@@ -149,23 +146,21 @@ class NormalProducer:
             self.producer.publish(message_json)
             return res
         except Exception as e:
-            current_app.logger.error(
-                f'Error when trying to parse the message to queue: {e}')
+            current_app.logger.error(f'Error when trying to parse the message to queue: {e}')
             res.set_result('Error when trying to parse the message to queue')
             res.set_code(EAPIResponseCode.internal_error)
             return res
 
     def transparently_produce(self, payload):
         current_app.logger.info(self.routing_key + "  ---------event sending.")
+        res = APIResponse()
         try:
-            res = APIResponse()
             self.producer.publish(payload)
             res.set_code(EAPIResponseCode.success)
             res.set_result(payload)
             return res
         except Exception as e:
-            current_app.logger.error(
-                f'Error when trying to parse the message to queue: {e}')
+            current_app.logger.error(f'Error when trying to parse the message to queue: {e}')
             res.set_result('Error when trying to parse the message to queue')
             res.set_code(EAPIResponseCode.internal_error)
             return res
@@ -180,13 +175,13 @@ class NormalProducer:
 
 
 class ProducerGenerate(NormalProducer):
-    # Init generate project producer, including all generate related function, 
+    # Init generate project producer, including all generate related function,
     # and different event type will be mapped to different function
     # for different event type, the published message may differ from each other
     # invalid_event function as the default function used for undefined event
     def generate_uploaded(self, payload):
+        res = APIResponse()
         try:
-            res = APIResponse()
             input_geid = payload.get('input_geid', None)
             input_path = payload.get('input_path', None)
             generate_id = payload.get('generate_id', None)
@@ -222,20 +217,18 @@ class ProducerGenerate(NormalProducer):
                 res.set_code(EAPIResponseCode.bad_request)
             return res
         except FileNotFoundError as not_found:
-            current_app.logger.error(
-                f'File not found in given path: {not_found}')
+            current_app.logger.error(f'File not found in given path: {not_found}')
             res.set_result(f'File not found: {not_found.filename}')
             res.set_code(EAPIResponseCode.bad_request)
         except Exception as e:
-            current_app.logger.error(
-                f'Error when trying to parse the message to queue: {e}')
+            current_app.logger.error(f'Error when trying to parse the message to queue: {e}')
             res.set_result('Error when trying to parse the message to queue')
             res.set_code(EAPIResponseCode.internal_error)
             return res
 
     def generate_processed(self, payload):
+        res = APIResponse()
         try:
-            res = APIResponse()
             input_geid = payload.get('input_geid', None)
             input_path = payload.get('input_path', None)
             generate_id = payload.get('generate_id', None)
@@ -263,8 +256,7 @@ class ProducerGenerate(NormalProducer):
             self.producer.publish(message_json)
             return res
         except Exception as e:
-            current_app.logger.error(
-                f'Error when trying to parse the message to queue: {e}')
+            current_app.logger.error(f'Error when trying to parse the message to queue: {e}')
             res.set_result('Error when trying to parse the message to queue')
             res.set_code(EAPIResponseCode.internal_error)
             return res

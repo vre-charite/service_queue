@@ -27,8 +27,7 @@ class QueueProducer(Resource):
             res = event_map(payload=payload)
             return res
         except Exception as e:
-            current_app.logger.exception(
-                f'Error when creating generate producer object: {e}')
+            current_app.logger.exception(f'Error when creating generate producer object: {e}')
 
     def generic_project(self, event_type, project, create_time, payload):
         # define the event type for all project
@@ -44,8 +43,7 @@ class QueueProducer(Resource):
             res = event_map(payload=payload)
             return res
         except Exception as e:
-            current_app.logger.exception(
-                f'Error when creating normal producer object: {e}')
+            current_app.logger.exception(f'Error when creating normal producer object: {e}')
 
     def invalid_project(self, event_type, project, create_time, payload):
         res = APIResponse()
@@ -83,8 +81,7 @@ class QueueProducer(Resource):
             res = project_map(event_type, project, create_time, payload)
             return res.response, res.code
         except Exception as e:
-            current_app.logger.exception(
-                f'Error when sending message to queue: {e}')
+            current_app.logger.exception(f'Error when sending message to queue: {e}')
             res.set_result('Error when sending message to queue')
             res.set_code(EAPIResponseCode.internal_error)
             return res.response, res.code

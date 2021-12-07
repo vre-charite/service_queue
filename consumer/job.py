@@ -35,6 +35,16 @@ class KubernetesApiClient(object):
             name='nfsvol'
         )
 
+        #Create environment variables for container.
+        env = [
+           client.V1EnvVar(
+               name='CONFIG_CENTER_BASE_URL',
+               value=ConfigClass.CONFIG_CENTER_BASE_URL), 
+           client.V1EnvVar(
+               name='CONFIG_CENTER_ENABLED',
+               value=ConfigClass.CONFIG_CENTER_ENABLED)
+               ]
+
         # vre core mount
         vre_core_nfs = client.V1NFSVolumeSource(
             path=ConfigClass.vre_core_nfs_path,
@@ -54,6 +64,7 @@ class KubernetesApiClient(object):
             image=container_image,
             command=command,
             args=args,
+            env=env,
             volume_mounts=[volume_mount, vre_core_volume_mount],
             image_pull_policy="Always")
         # parse annotation
@@ -182,6 +193,17 @@ class KubernetesApiClient(object):
             mount_path=volume_path,
             name='nfsvol'
         )
+
+        #Create environment variables for container.
+        env = [
+           client.V1EnvVar(
+               name='CONFIG_CENTER_BASE_URL',
+               value=ConfigClass.CONFIG_CENTER_BASE_URL), 
+           client.V1EnvVar(
+               name='CONFIG_CENTER_ENABLED',
+               value=ConfigClass.CONFIG_CENTER_ENABLED)
+               ]
+
         # vre core mount
         vre_core_nfs = client.V1NFSVolumeSource(
             path=ConfigClass.vre_core_nfs_path,
@@ -201,6 +223,7 @@ class KubernetesApiClient(object):
             image=container_image,
             command=command,
             args=args,
+            env=env,
             volume_mounts=[volume_mount, vre_core_volume_mount],
             image_pull_policy="Always")
 
@@ -254,6 +277,17 @@ class KubernetesApiClient(object):
             mount_path=volume_path,
             name='nfsvol'
         )
+
+        #Create environment variables for container.
+        env = [
+           client.V1EnvVar(
+               name='CONFIG_CENTER_BASE_URL',
+               value=ConfigClass.CONFIG_CENTER_BASE_URL), 
+           client.V1EnvVar(
+               name='CONFIG_CENTER_ENABLED',
+               value=ConfigClass.CONFIG_CENTER_ENABLED)
+               ]
+
         # vre core mount
         vre_core_nfs = client.V1NFSVolumeSource(
             path=ConfigClass.vre_core_nfs_path,
@@ -273,6 +307,7 @@ class KubernetesApiClient(object):
             image=container_image,
             command=command,
             args=args,
+            env=env,
             volume_mounts=[volume_mount, vre_core_volume_mount],
             image_pull_policy="Always")
 
@@ -325,6 +360,17 @@ class KubernetesApiClient(object):
             mount_path=volume_path,
             name='nfsvol'
         )
+
+        #Create environment variables for container.
+        env = [
+           client.V1EnvVar(
+               name='CONFIG_CENTER_BASE_URL',
+               value=ConfigClass.CONFIG_CENTER_BASE_URL), 
+           client.V1EnvVar(
+               name='CONFIG_CENTER_ENABLED',
+               value=ConfigClass.CONFIG_CENTER_ENABLED)
+               ]
+
         # vre core mount
         vre_core_nfs = client.V1NFSVolumeSource(
             path=ConfigClass.vre_core_nfs_path,
@@ -344,6 +390,7 @@ class KubernetesApiClient(object):
             image=container_image,
             command=command,
             args=args,
+            env=env,
             volume_mounts=[volume_mount, vre_core_volume_mount],
             image_pull_policy="Always")
         # metadata defined in annotations part
@@ -391,6 +438,17 @@ class KubernetesApiClient(object):
             mount_path=volume_path,
             name='nfsvol'
         )
+
+        #Create environment variables for container.
+        env = [
+           client.V1EnvVar(
+               name='CONFIG_CENTER_BASE_URL',
+               value=ConfigClass.CONFIG_CENTER_BASE_URL), 
+           client.V1EnvVar(
+               name='CONFIG_CENTER_ENABLED',
+               value=ConfigClass.CONFIG_CENTER_ENABLED)
+               ]
+
         # vre core mount
         vre_core_nfs = client.V1NFSVolumeSource(
             path=ConfigClass.vre_core_nfs_path,
@@ -410,6 +468,7 @@ class KubernetesApiClient(object):
             image=container_image,
             command=command,
             args=args,
+            env=env,
             volume_mounts=[volume_mount, vre_core_volume_mount],
             image_pull_policy="Always")
 
@@ -462,6 +521,17 @@ class KubernetesApiClient(object):
             mount_path=volume_path,
             name='nfsvol'
         )
+
+        #Create environment variables for container.
+        env = [
+           client.V1EnvVar(
+               name='CONFIG_CENTER_BASE_URL',
+               value=ConfigClass.CONFIG_CENTER_BASE_URL), 
+           client.V1EnvVar(
+               name='CONFIG_CENTER_ENABLED',
+               value=ConfigClass.CONFIG_CENTER_ENABLED)
+               ]
+
         # vre core mount
         vre_core_nfs = client.V1NFSVolumeSource(
             path=ConfigClass.vre_core_nfs_path,
@@ -481,6 +551,7 @@ class KubernetesApiClient(object):
             image=container_image,
             command=command,
             args=args,
+            env=env,
             volume_mounts=[volume_mount, vre_core_volume_mount],
             image_pull_policy="Always")
         # metadata defined in annotations part

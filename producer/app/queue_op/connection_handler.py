@@ -1,13 +1,15 @@
-from flask import request, current_app
-from flask_restx import Api, Resource, fields
-from config import ConfigClass
 import pika
+from flask import current_app
+
+from config import ConfigClass
+
 
 class ConnectionHandler:
-    # This class used to initiate Queue connection 
-    def __init__(self):      
+    # This class used to initiate Queue connection
+    def __init__(self):
+        self._connection = None
         self.init_connection()
-        
+
     def init_connection(self):
         try:
             credentials = pika.PlainCredentials(
@@ -28,8 +30,6 @@ class ConnectionHandler:
 
     def close_connection(self):
         self._connection.close()
-    
+
     def get_current_connection(self):
         return self._connection
-
-    
