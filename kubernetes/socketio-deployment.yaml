@@ -25,7 +25,7 @@ spec:
     spec:
       containers:
         - name: queue-socketio
-          image: 10.32.42.225:5000/queue-socketio:<VERSION>
+          image: s-hdp-vre-v007.charite.de/queue-socketio:<VERSION>
           env:
           - name: env
             value: "charite"

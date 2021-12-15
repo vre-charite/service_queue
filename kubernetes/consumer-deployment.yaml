@@ -26,7 +26,7 @@ spec:
       serviceAccountName: consumer-serviceaccount
       containers:
         - name: queue-consumer
-          image: 10.32.42.225:5000/queue-consumer:<VERSION>
+          image: s-hdp-vre-v007.charite.de/queue-consumer:<VERSION>
           env:
           - name: env
             value: "charite"

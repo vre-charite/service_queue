@@ -1,7 +1,7 @@
 image: docker:latest
 
 variables:
-  REGISTRY: 10.32.42.225:5000
+  REGISTRY: s-hdp-vre-v007.charite.de
   PRODUCER_CONTAINER_IMAGE: ${REGISTRY}/queue-producer:${CI_COMMIT_SHORT_SHA}
   CONSUMER_CONTAINER_IMAGE: ${REGISTRY}/queue-consumer:${CI_COMMIT_SHORT_SHA}
   SOCKETIO_CONTAINER_IMAGE: ${REGISTRY}/queue-socketio:${CI_COMMIT_SHORT_SHA}
