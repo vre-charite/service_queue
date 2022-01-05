@@ -154,11 +154,11 @@ class ConfigClass(object):
 
     # dicom pipeline image
     docker_ip = settings.docker_registry_ip
-    dcmedit_image = docker_ip + ':5000/dcmedit:v0.1'
+    dcmedit_image = docker_ip + '/dcmedit:v0.1'
 
     # data_transfer pipeline
-    data_transfer_image = docker_ip + ':5000/filecopy:v0.1'
-    bids_validate_image = docker_ip + ':5000/bids-validator:v0.1'
+    data_transfer_image = docker_ip + '/filecopy:v0.1'
+    bids_validate_image = docker_ip + '/bids-validator:v0.1'
     copy_pipeline = settings.copy_pipeline
     copy_pipeline_folder = settings.copy_pipeline_folder
     move_pipeline = settings.move_pipeline
