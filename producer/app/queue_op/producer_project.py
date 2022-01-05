@@ -54,9 +54,9 @@ class NormalProducer:
         res = APIResponse()
         try:
             destination_geid = payload.get('destination_geid', None)
-            input_geid = payload.get('input_geid', None)
             input_path = payload.get('input_path', None)
             uploader = payload.get('uploader', None)
+            request_id = payload.get('request_id', None)
             generate_id = payload.get('generate_id', None)
             output_path = payload.get('output_path', None)
             session_id = payload.get('session_id', 'default_session')
@@ -87,6 +87,7 @@ class NormalProducer:
                 'uploader': uploader,
                 'process_pipeline': ConfigClass.copy_pipeline,
                 'create_time': self.create_time,
+                'request_id': request_id,
                 'generate_id': generate_id,
                 'session_id': session_id,
                 'job_id': job_id,
