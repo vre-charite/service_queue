@@ -34,7 +34,7 @@ spec:
           - name: CONFIG_CENTER_BASE_URL
             value: "http://common.utility:5062/"
           - name: docker_registry_ip
-            value: "10.32.42.225"
+            value: "s-hdp-vre-v007.charite.de"
           resources:
             requests:
               memory: "1000Mi"
