@@ -1,48 +1,76 @@
-import os
-import requests
-from requests.models import HTTPError
-from pydantic import BaseSettings, Extra
-from typing import Dict, Set, List, Any
-from functools import lru_cache
+# Copyright 2022 Indoc Research
+# 
+# Licensed under the EUPL, Version 1.2 or – as soon they
+# will be approved by the European Commission - subsequent
+# versions of the EUPL (the "Licence");
+# You may not use this work except in compliance with the
+# Licence.
+# You may obtain a copy of the Licence at:
+# 
+# https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+# 
+# Unless required by applicable law or agreed to in
+# writing, software distributed under the Licence is
+# distributed on an "AS IS" basis,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+# express or implied.
+# See the Licence for the specific language governing
+# permissions and limitations under the Licence.
+# 
 
-SRV_NAMESPACE = os.environ.get("APP_NAME", "service_queue")
-CONFIG_CENTER_ENABLED = os.environ.get("CONFIG_CENTER_ENABLED", "false")
-CONFIG_CENTER_BASE_URL = os.environ.get("CONFIG_CENTER_BASE_URL", "NOT_SET")
+import os
+from functools import lru_cache
+from typing import Any
+from typing import Dict
+
+from pydantic import BaseSettings
+from pydantic import Extra
+from common import VaultClient
+from dotenv import load_dotenv
+
+# load env var from local env file
+load_dotenv()
+SRV_NAMESPACE = os.environ.get('APP_NAME', 'service_queue')
+CONFIG_CENTER_ENABLED = os.environ.get('CONFIG_CENTER_ENABLED', 'false')
+
 
 def load_vault_settings(settings: BaseSettings) -> Dict[str, Any]:
     if CONFIG_CENTER_ENABLED == "false":
         return {}
     else:
-        return vault_factory(CONFIG_CENTER_BASE_URL)
-
-def vault_factory(config_center) -> dict:
-    url = f"{config_center}/v1/utility/config/{SRV_NAMESPACE}"
-    config_center_respon = requests.get(url)
-    if config_center_respon.status_code != 200:
-        raise HTTPError(config_center_respon.text)
-    return config_center_respon.json()['result']
+        vc = VaultClient(os.getenv("VAULT_URL"), os.getenv("VAULT_CRT"), os.getenv("VAULT_TOKEN"))
+        return vc.get_from_vault(SRV_NAMESPACE)
 
 
 class Settings(BaseSettings):
+    """Store service configuration settings."""
+
+    APP_NAME: str = 'service_queue'
+    version: str = '0.2.0'
     port: int = 6060
-    host: str = "0.0.0.0"
-    env: str = "test"
+    host: str = '0.0.0.0'
+    env: str = 'test'
 
     gm_queue_endpoint: str
     gm_username: str
     gm_password: str
     # folders been watched
-    data_lake: str = '/data/vre-storage'
-    vre_data_storage: str = '/vre-data'
-    #pipeline name
-    generate_pipeline: str ='dicom_edit'
+    data_storage: str
+    # pipeline name
+    dcm_pipeline: str = 'dicom_edit'
     copy_pipeline: str = 'data_transfer'
     move_pipeline: str = 'data_delete'
-    #greenroom queue
+    # greenroom queue
     gr_queue: str = 'gr_queue'
     gr_exchange: str = 'gr_exchange'
     WORK_PATH: str = '/tmp/workdir'
     LOG_PATH: str = '/tmp/logs'
+
+    OPEN_TELEMETRY_ENABLED: str = "FALSE"
+    OPEN_TELEMETRY_HOST: str = '127.0.0.1'
+    OPEN_TELEMETRY_PORT: int = 6831
+    DCM_PROJECT: str
+
     
     class Config:
         env_file = '.env'
@@ -50,44 +78,14 @@ class Settings(BaseSettings):
         extra = Extra.allow
 
         @classmethod
-        def customise_sources(
-            cls,
-            init_settings,
-            env_settings,
-            file_secret_settings,
-        ):
-            return (
-                load_vault_settings,
-                env_settings,
-                init_settings,
-                file_secret_settings,
-            )
-    
+        def customise_sources(cls, init_settings, env_settings, file_secret_settings):
+            return load_vault_settings, env_settings, init_settings, file_secret_settings
+
 
 @lru_cache(1)
 def get_settings():
-    settings =  Settings()
+    settings = Settings()
     return settings
 
-class ConfigClass(object):
-    settings = get_settings()
 
-    version = "0.2.0"
-    env = settings.env
-
-    gm_queue_endpoint = settings.gm_queue_endpoint
-    gm_username = settings.gm_username
-    gm_password = settings.gm_password
-    # folders been watched
-    data_lake = settings.data_lake
-    vre_data_storage = settings.vre_data_storage
-    #pipeline name
-    generate_pipeline = settings.generate_pipeline
-    copy_pipeline = settings.copy_pipeline
-    move_pipeline = settings.move_pipeline
-    #greenroom queue
-    gr_queue = settings.gr_queue
-    gr_exchange = settings.gr_exchange
-
-    WORK_PATH = settings.WORK_PATH
-    LOG_PATH = settings.LOG_PATH
+ConfigClass = Settings()

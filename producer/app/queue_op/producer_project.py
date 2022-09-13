@@ -1,3 +1,23 @@
+# Copyright 2022 Indoc Research
+# 
+# Licensed under the EUPL, Version 1.2 or – as soon they
+# will be approved by the European Commission - subsequent
+# versions of the EUPL (the "Licence");
+# You may not use this work except in compliance with the
+# Licence.
+# You may obtain a copy of the Licence at:
+# 
+# https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+# 
+# Unless required by applicable law or agreed to in
+# writing, software distributed under the Licence is
+# distributed on an "AS IS" basis,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+# express or implied.
+# See the Licence for the specific language governing
+# permissions and limitations under the Licence.
+# 
+
 import os
 
 from flask import current_app
@@ -57,7 +77,7 @@ class NormalProducer:
             input_path = payload.get('input_path', None)
             uploader = payload.get('uploader', None)
             request_id = payload.get('request_id', None)
-            generate_id = payload.get('generate_id', None)
+            dcm_id = payload.get('dcm_id', None)
             output_path = payload.get('output_path', None)
             session_id = payload.get('session_id', 'default_session')
             job_id = payload.get('job_id', 'default_job')
@@ -74,7 +94,6 @@ class NormalProducer:
                 res.set_code(EAPIResponseCode.bad_request)
                 return res
             filename = os.path.basename(input_path)
-            # output_path = ConfigClass.vre_data_storage + '/' + self.project + '/raw/' + filename
             current_app.logger.info(
                 f'input path: {input_path}, file name : {filename}')
             message_json = {
@@ -88,7 +107,7 @@ class NormalProducer:
                 'process_pipeline': ConfigClass.copy_pipeline,
                 'create_time': self.create_time,
                 'request_id': request_id,
-                'generate_id': generate_id,
+                'dcm_id': dcm_id,
                 'session_id': session_id,
                 'job_id': job_id,
                 'operator': operator,
@@ -110,7 +129,7 @@ class NormalProducer:
             input_geid = payload.get('input_geid', None)
             input_path = payload.get('input_path', None)
             uploader = payload.get('uploader', None)
-            generate_id = payload.get('generate_id', None)
+            dcm_id = payload.get('dcm_id', None)
             output_path = payload.get('output_path', None)
             session_id = payload.get('session_id', 'default_session')
             job_id = payload.get('job_id', 'default_job')
@@ -125,7 +144,6 @@ class NormalProducer:
                 res.set_code(EAPIResponseCode.bad_request)
                 return res
             filename = os.path.basename(input_path)
-            # output_path = ConfigClass.vre_data_storage + '/' + self.project + '/raw/' + filename
             current_app.logger.info(
                 f'input path: {input_path}, file name : {filename}')
             message_json = {
@@ -137,7 +155,7 @@ class NormalProducer:
                 'uploader': uploader,
                 'process_pipeline': ConfigClass.move_pipeline,
                 'create_time': self.create_time,
-                'generate_id': generate_id,
+                'dcm_id': dcm_id,
                 'session_id': session_id,
                 'job_id': job_id,
                 'operator': operator,
@@ -175,20 +193,20 @@ class NormalProducer:
         return res
 
 
-class ProducerGenerate(NormalProducer):
-    # Init generate project producer, including all generate related function,
+class ProducerDcm(NormalProducer):
+    # Init dcmedit project producer, including all dcmedit related function,
     # and different event type will be mapped to different function
     # for different event type, the published message may differ from each other
     # invalid_event function as the default function used for undefined event
-    def generate_uploaded(self, payload):
+    def dcm_uploaded(self, payload):
         res = APIResponse()
         try:
             input_geid = payload.get('input_geid', None)
             input_path = payload.get('input_path', None)
-            generate_id = payload.get('generate_id', None)
+            dcm_id = payload.get('dcm_id', None)
             uploader = payload.get('uploader', None)
             auth_token = payload.get('auth_token', {"at":"", "rt":""})
-            if not input_path or not generate_id or not uploader:
+            if not input_path or not dcm_id or not uploader:
                 res.set_result('Missing required information')
                 res.set_code(EAPIResponseCode.bad_request)
                 return res
@@ -202,11 +220,11 @@ class ProducerGenerate(NormalProducer):
                     'project': self.project,
                     'input_geid': input_geid,
                     'input_path': input_path,
-                    'pipeline': ConfigClass.generate_pipeline,
+                    'pipeline': ConfigClass.dcm_pipeline,
                     'output_path': output_path,
                     'work_path': ConfigClass.WORK_PATH,
                     'log_path': ConfigClass.LOG_PATH,
-                    'generate_id': generate_id,
+                    'dcm_id': dcm_id,
                     'uploader': uploader,
                     'create_time': self.create_time,
                     'auth_token': auth_token
@@ -227,20 +245,20 @@ class ProducerGenerate(NormalProducer):
             res.set_code(EAPIResponseCode.internal_error)
             return res
 
-    def generate_processed(self, payload):
+    def dcm_processed(self, payload):
         res = APIResponse()
         try:
             input_geid = payload.get('input_geid', None)
             input_path = payload.get('input_path', None)
-            generate_id = payload.get('generate_id', None)
+            dcm_id = payload.get('dcm_id', None)
             uploader = payload.get('uploader', None)
             pipeline = payload.get('pipeline', None)
-            if not input_path or not generate_id or not uploader:
+            if not input_path or not dcm_id or not uploader:
                 res.set_result('Missing required information')
                 res.set_code(EAPIResponseCode.bad_request)
                 return res
             filename = os.path.basename(input_path)
-            output_path = ConfigClass.vre_data_storage + '/' + \
+            output_path = ConfigClass.data_storage + '/' + \
                 self.project + '/' + pipeline + '/' + filename
             current_app.logger.info(
                 f'input path: {input_path}, file name : {filename}')
@@ -250,7 +268,7 @@ class ProducerGenerate(NormalProducer):
                 'input_path': input_path,
                 'pipeline': pipeline,
                 'output_path': output_path,
-                'generate_id': generate_id,
+                'dcm_id': dcm_id,
                 'uploader': uploader,
                 'create_time': self.create_time
             }
@@ -266,6 +284,6 @@ class ProducerGenerate(NormalProducer):
         res = APIResponse()
         project = payload.get('project', None)
         current_app.logger.error(f'Undefined event type for project {project}')
-        res.set_result('Undefined event type for generate project')
+        res.set_result(f'Undefined event type for {ConfigClass.DCM_PROJECT} project')
         res.set_code(EAPIResponseCode.bad_request)
         return res
