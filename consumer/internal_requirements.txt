@@ -18,31 +18,5 @@
 // permissions and limitations under the Licence.
 // 
 
-filetype==1.0.7
-gunicorn==20.0.4
-flask-restx==0.2.0
-aniso8601==8.0.0
-astroid==2.4.2
-attrs==19.3.0
-certifi==2020.6.20
-chardet==3.0.4
-click==7.1.2
-Flask==1.1.4
-Flask-Cors==3.0.8
-Flask-Executor==0.9.3
-flask-restx==0.2.0
-importlib-metadata==1.7.0
-pika==1.1.0
-pylint==2.5.3
-pytz==2020.1
-requests==2.24.0
-urllib3==1.25.10
-python-dotenv==0.19.1
-pydantic==1.8.2
-opentelemetry-exporter-jaeger==1.6.2
-opentelemetry-instrumentation==0.26b1
-opentelemetry-instrumentation-flask==0.26b1
-opentelemetry-instrumentation-pika==0.26b1
-opentelemetry-instrumentation-requests==0.26b1
-itsdangerous==1.1.0
-markupsafe==1.1.1
+--extra-index-url https://${PIP_USERNAME}:${PIP_PASSWORD}@git.indocresearch.org/api/v4/groups/pilot/-/packages/pypi/simple
+common==0.0.19

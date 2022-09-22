@@ -1,7 +1,27 @@
+# Copyright 2022 Indoc Research
+# 
+# Licensed under the EUPL, Version 1.2 or – as soon they
+# will be approved by the European Commission - subsequent
+# versions of the EUPL (the "Licence");
+# You may not use this work except in compliance with the
+# Licence.
+# You may obtain a copy of the Licence at:
+# 
+# https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+# 
+# Unless required by applicable law or agreed to in
+# writing, software distributed under the Licence is
+# distributed on an "AS IS" basis,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+# express or implied.
+# See the Licence for the specific language governing
+# permissions and limitations under the Licence.
+# 
+
 from flask import request, current_app
 from flask_restx import Api, Resource, fields
 from models.api_response import APIResponse, EAPIResponseCode
-from .producer_project import ProducerGenerate, NormalProducer
+from .producer_project import ProducerDcm, NormalProducer
 from config import ConfigClass
 import pika
 import json
@@ -10,24 +30,24 @@ import os
 
 class QueueProducer(Resource):
 
-    def generate(self, event_type, project, create_time, payload):
-        # define the event type for generate project
+    def dcm(self, event_type, project, create_time, payload):
+        # define the event type for dcmedit project
         try:
-            generate_producer = ProducerGenerate(
+            dcm_producer = ProducerDcm(
                 event_type, project, create_time)
             event_map = {
-                'data_uploaded': generate_producer.generate_uploaded,
-                'data_processed': generate_producer.generate_processed,
-                'file_copy': generate_producer.file_copy,
-                'file_delete': generate_producer.file_move,
-                'bids_validate': generate_producer.bids_validate,
-                'folder_copy': generate_producer.transparently_produce,
-                'folder_delete': generate_producer.transparently_produce
-            }.get(event_type, generate_producer.invalid_event)
+                'data_uploaded': dcm_producer.dcm_uploaded,
+                'data_processed': dcm_producer.dcm_processed,
+                'file_copy': dcm_producer.file_copy,
+                'file_delete': dcm_producer.file_move,
+                'bids_validate': dcm_producer.bids_validate,
+                'folder_copy': dcm_producer.transparently_produce,
+                'folder_delete': dcm_producer.transparently_produce
+            }.get(event_type, dcm_producer.invalid_event)
             res = event_map(payload=payload)
             return res
         except Exception as e:
-            current_app.logger.exception(f'Error when creating generate producer object: {e}')
+            current_app.logger.exception(f'Error when creating dcm producer object: {e}')
 
     def generic_project(self, event_type, project, create_time, payload):
         # define the event type for all project
@@ -76,7 +96,7 @@ class QueueProducer(Resource):
                 return res.response, res.code
 
             project_map = {
-                'generate': self.generate,
+                ConfigClass.DCM_PROJECT: self.dcm,
             }.get(project, self.generic_project)
             res = project_map(event_type, project, create_time, payload)
             return res.response, res.code

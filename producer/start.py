@@ -1,4 +1,3 @@
-#!/bin/sh
 # Copyright 2022 Indoc Research
 # 
 # Licensed under the EUPL, Version 1.2 or – as soon they
@@ -19,5 +18,10 @@
 # permissions and limitations under the Licence.
 # 
 
+from app import create_app
+from config import get_settings
 
-gunicorn -c gunicorn_config.py "app:create_app()"
+if __name__ == '__main__':
+    app = create_app()
+    settings = get_settings()
+    app.run(host=settings.host, port=settings.port, debug=True)
