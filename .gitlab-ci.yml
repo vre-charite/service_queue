@@ -1,10 +1,14 @@
 image: docker:latest
 
 variables:
-  REGISTRY: s-hdp-vre-v007.charite.de
-  PRODUCER_CONTAINER_IMAGE: ${REGISTRY}/queue-producer:${CI_COMMIT_SHORT_SHA}
-  CONSUMER_CONTAINER_IMAGE: ${REGISTRY}/queue-consumer:${CI_COMMIT_SHORT_SHA}
-  SOCKETIO_CONTAINER_IMAGE: ${REGISTRY}/queue-socketio:${CI_COMMIT_SHORT_SHA}
+  REGISTRY: registry.bihealth.org
+  PRODUCER_CONTAINER_IMAGE: ${REGISTRY}/vre/service_queue/queue-producer:${CI_COMMIT_SHORT_SHA}
+  CONSUMER_CONTAINER_IMAGE: ${REGISTRY}/vre/service_queue/queue-consumer:${CI_COMMIT_SHORT_SHA}
+  SOCKETIO_CONTAINER_IMAGE: ${REGISTRY}/vre/service_queue/queue-socketio:${CI_COMMIT_SHORT_SHA}
+  TARGET_RELEASE_PRODUCER: queue-producer
+  TARGET_RELEASE_CONSUMER: queue-consumer
+  TARGET_RELEASE_SOCKETIO: queue-socketio
+
 
 build-producer:
   stage: build
@@ -19,7 +23,7 @@ build-producer:
       - producer/queue_op/*
   script:
     - docker login ${REGISTRY} -u ${DOCKER_USER} -p ${DOCKER_PASSWORD}
-    - docker build --build-arg http_proxy=http://proxy.charite.de:8080/ --build-arg https_proxy=http://proxy.charite.de:8080/ -t ${PRODUCER_CONTAINER_IMAGE} producer/.
+    - docker build --build-arg PIP_USERNAME=${DOCKER_USER} --build-arg PIP_PASSWORD=${DOCKER_PASSWORD} --build-arg http_proxy=http://proxy.charite.de:8080/ --build-arg https_proxy=http://proxy.charite.de:8080/ -t ${PRODUCER_CONTAINER_IMAGE} producer/.
     - docker push ${PRODUCER_CONTAINER_IMAGE}
 
 deploy-producer:
@@ -34,9 +38,21 @@ deploy-producer:
       - producer/models/*
       - producer/queue_op/*
   script:
-    - sed -i "s/<VERSION>/${CI_COMMIT_SHORT_SHA}/g" kubernetes/producer-deployment.yaml
-    - kubectl apply -f kubernetes/producer-deployment.yaml
-
+    - pwd
+    - cd .. && ls
+    - rm -rf vre-infra
+    - git clone https://${DOCKER_USER}:${DOCKER_PASSWORD}@git.bihealth.org/vre/vre-infra.git
+    - sed -r -i -e "s/(^${TARGET_RELEASE_PRODUCER}_app_version\s*=\s*).*/\1\"${CI_COMMIT_SHORT_SHA}\"/" vre-infra/terraform/config/charite/charite.tfvars
+    - cat vre-infra/terraform/config/charite/charite.tfvars|grep -i ^${TARGET_RELEASE_PRODUCER}_app_version
+    - cd vre-infra
+    - 'git config user.name ${DOCKER_USERNAME} && git config user.email "indoc-devops@indocresearch.org"'
+    - 'git config --global user.password ${DOCKER_PASSWORD}'
+    - git diff
+    - git stage terraform/config/charite/charite.tfvars
+    - git status
+    - git pull https://${DOCKER_USER}:${DOCKER_PASSWORD}@git.bihealth.org/vre/vre-infra.git HEAD:refs/heads/main
+    - 'git commit  -m "[ci skip] Terraform Deployment: ${TARGET_RELEASE_PRODUCER} to ${CI_COMMIT_SHORT_SHA} "'
+    - git push https://${DOCKER_USER}:${DOCKER_PASSWORD}@git.bihealth.org/vre/vre-infra.git HEAD:refs/heads/main
 
 build-consumer:
   stage: build
@@ -48,7 +64,7 @@ build-consumer:
       - consumer/*
   script:
     - docker login ${REGISTRY} -u ${DOCKER_USER} -p ${DOCKER_PASSWORD}
-    - docker build --build-arg http_proxy=http://proxy.charite.de:8080/ --build-arg https_proxy=http://proxy.charite.de:8080/ -t ${CONSUMER_CONTAINER_IMAGE} consumer/.
+    - docker build --build-arg PIP_USERNAME=${DOCKER_USER} --build-arg PIP_PASSWORD=${DOCKER_PASSWORD} --build-arg http_proxy=http://proxy.charite.de:8080/ --build-arg https_proxy=http://proxy.charite.de:8080/ -t ${CONSUMER_CONTAINER_IMAGE} consumer/.
     - docker push ${CONSUMER_CONTAINER_IMAGE}
 
 deploy-consumer:
@@ -60,9 +76,21 @@ deploy-consumer:
       - kubernetes/consumer-deployment.yaml
       - consumer/*
   script:
-    - sed -i "s/<VERSION>/${CI_COMMIT_SHORT_SHA}/g" kubernetes/consumer-deployment.yaml
-    - kubectl apply -f kubernetes/consumer-deployment.yaml
-
+    - pwd
+    - cd .. && ls
+    - rm -rf vre-infra
+    - git clone https://${DOCKER_USER}:${DOCKER_PASSWORD}@git.bihealth.org/vre/vre-infra.git
+    - sed -r -i -e "s/(^${TARGET_RELEASE_CONSUMER}_app_version\s*=\s*).*/\1\"${CI_COMMIT_SHORT_SHA}\"/" vre-infra/terraform/config/charite/charite.tfvars
+    - cat vre-infra/terraform/config/charite/charite.tfvars|grep -i ^${TARGET_RELEASE_CONSUMER}_app_version
+    - cd vre-infra
+    - 'git config user.name ${DOCKER_USERNAME} && git config user.email "indoc-devops@indocresearch.org"'
+    - 'git config --global user.password ${DOCKER_PASSWORD}'
+    - git diff
+    - git stage terraform/config/charite/charite.tfvars
+    - git status
+    - git pull https://${DOCKER_USER}:${DOCKER_PASSWORD}@git.bihealth.org/vre/vre-infra.git HEAD:refs/heads/main
+    - 'git commit  -m "[ci skip] Terraform Deployment: ${TARGET_RELEASE_CONSUMER} to ${CI_COMMIT_SHORT_SHA} "'
+    - git push https://${DOCKER_USER}:${DOCKER_PASSWORD}@git.bihealth.org/vre/vre-infra.git HEAD:refs/heads/main
 
 build-socketio:
   stage: build
@@ -74,7 +102,7 @@ build-socketio:
       - socketio/*
   script:
     - docker login ${REGISTRY} -u ${DOCKER_USER} -p ${DOCKER_PASSWORD}
-    - docker build --build-arg http_proxy=http://proxy.charite.de:8080/ --build-arg https_proxy=http://proxy.charite.de:8080/ -t ${SOCKETIO_CONTAINER_IMAGE} socketio/.
+    - docker build --build-arg PIP_USERNAME=${DOCKER_USER} --build-arg PIP_PASSWORD=${DOCKER_PASSWORD} --build-arg http_proxy=http://proxy.charite.de:8080/ --build-arg https_proxy=http://proxy.charite.de:8080/ -t ${SOCKETIO_CONTAINER_IMAGE} socketio/.
     - docker push ${SOCKETIO_CONTAINER_IMAGE}
 
 deploy-socketio:
@@ -86,5 +114,18 @@ deploy-socketio:
       - kubernetes/socketio-deployment.yaml
       - socketio/*
   script:
-    - sed -i "s/<VERSION>/${CI_COMMIT_SHORT_SHA}/g" kubernetes/socketio-deployment.yaml
-    - kubectl apply -f kubernetes/socketio-deployment.yaml
+    - pwd
+    - cd .. && ls
+    - rm -rf vre-infra
+    - git clone https://${DOCKER_USER}:${DOCKER_PASSWORD}@git.bihealth.org/vre/vre-infra.git
+    - sed -r -i -e "s/(^${TARGET_RELEASE_SOCKETIO}_app_version\s*=\s*).*/\1\"${CI_COMMIT_SHORT_SHA}\"/" vre-infra/terraform/config/charite/charite.tfvars
+    - cat vre-infra/terraform/config/charite/charite.tfvars|grep -i ^${TARGET_RELEASE_SOCKETIO}_app_version
+    - cd vre-infra
+    - 'git config user.name ${DOCKER_USERNAME} && git config user.email "indoc-devops@indocresearch.org"'
+    - 'git config --global user.password ${DOCKER_PASSWORD}'
+    - git diff
+    - git stage terraform/config/charite/charite.tfvars
+    - git status
+    - git pull https://${DOCKER_USER}:${DOCKER_PASSWORD}@git.bihealth.org/vre/vre-infra.git HEAD:refs/heads/main
+    - 'git commit  -m "[ci skip] Terraform Deployment: ${TARGET_RELEASE_SOCKETIO} to ${CI_COMMIT_SHORT_SHA} "'
+    - git push https://${DOCKER_USER}:${DOCKER_PASSWORD}@git.bihealth.org/vre/vre-infra.git HEAD:refs/heads/main
