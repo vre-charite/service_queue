@@ -2,9 +2,9 @@ image: docker:latest
 
 variables:
   REGISTRY: registry.bihealth.org
-  PRODUCER_CONTAINER_IMAGE: ${REGISTRY}/vre/service_queue/queue-producer:${CI_COMMIT_SHORT_SHA}
-  CONSUMER_CONTAINER_IMAGE: ${REGISTRY}/vre/service_queue/queue-consumer:${CI_COMMIT_SHORT_SHA}
-  SOCKETIO_CONTAINER_IMAGE: ${REGISTRY}/vre/service_queue/queue-socketio:${CI_COMMIT_SHORT_SHA}
+  PRODUCER_CONTAINER_IMAGE: ${REGISTRY}/vre/service_queue/producer:${CI_COMMIT_SHORT_SHA}
+  CONSUMER_CONTAINER_IMAGE: ${REGISTRY}/vre/service_queue/consumer:${CI_COMMIT_SHORT_SHA}
+  SOCKETIO_CONTAINER_IMAGE: ${REGISTRY}/vre/service_queue/socketio:${CI_COMMIT_SHORT_SHA}
   TARGET_RELEASE_PRODUCER: queue-producer
   TARGET_RELEASE_CONSUMER: queue-consumer
   TARGET_RELEASE_SOCKETIO: queue-socketio
