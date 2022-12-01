@@ -35,3 +35,4 @@ RUN PIP_USERNAME=$PIP_USERNAME PIP_PASSWORD=$PIP_PASSWORD pip install --no-cache
 ENV PATH="/home/deploy/.local/bin:${PATH}"
 # CMD ["./gunicorn_starter.sh"]
 CMD python run.py
+
